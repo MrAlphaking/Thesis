@@ -153,7 +153,12 @@ cython_debug/
 data/
 *.0
 src/outputs/
+src/cache_dir/
+src/Tryout/cache_dir/
+src/Tryout/outputs/
 Jamspell/JamSpell/
 *.tar
 *.pkl
 src/cache_dir/
+*.png
+*.jpeg
