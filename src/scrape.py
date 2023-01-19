@@ -72,18 +72,26 @@ dict = {"gn" : 50,
         "op": 22
         }
 
+newdict = {
+        "op": 22
+}
+
 for key, value in dict.items():
-    print (key, value)
+
     for i in range (1, value + 1):
+
         webUrl = urllib2.urlopen(f"https://viaveritasvita.info/Bibles/DutchBibles/SV_html/{key}{i}.htm")
 
         # read the data from the URL and print it
         data = str(webUrl.read())
+        data = data.split("<TD VALIGN=top>")
+        # data= re.sub("<.*?>","",data[1])
+        data = data[len(data) - 1].split("<")[0]
 
-        data = data.split("<TABLE>")
-        data= re.sub("<.*?>","",data[1])
+        print(key, i, data)
+
         # data = data.replace("\n", "")
-        data = data.split("\\n")
+        # data = data.split("\\n")
         # print(data[3:len(data) - 8])
 
 
