@@ -3,7 +3,7 @@
 # Run this with python ./src/dt_classification_RoBERTa_BERT.py
 
 from simpletransformers.language_generation import LanguageGenerationModel
-import pandas as pd
+import panda as pd
 import logging
 
 logging.basicConfig(level=logging.INFO)

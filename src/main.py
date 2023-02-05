@@ -18,7 +18,11 @@ if __name__ == "__main__":
 
 
     # Create training and evaluation dataset
-    # - Collect corrected texts for various time periods
+    # OCR data collection
+    #   - Collect corrected texts for various time periods
+    #   - Data preprocessing (only use sentences with a certain amount of words)
+    #   - (Optional) assess the quality of the OCR to make sure the quality is sufficient https://journal.dhbenelux.org/wp-content/uploads/2022/07/jdhbenelux4_07-Cuper.pdf
+    # Style detection
     # - For each time period identify the style of the text:
     #   - Font
     #   - Font size
