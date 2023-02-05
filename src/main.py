@@ -5,8 +5,8 @@ if __name__ == "__main__":
     # image_path = "../images/background.jpeg"
     # output_path = "../images/background-edited.jpeg"
 
-    image_path = "../images/white.png"
-    output_path = "../images/white-edited.png"
+    image_path = "../images/white.jpg"
+    output_path = "../images/white-edited.jpg"
     ImageCreation = ImageCreation(image_path, output_path)
 
     sentences = ["Ik loop hier alleen", "In een te stille stad", "Ik heb eigenlijk nooit last", "Van heimwee gehad"]

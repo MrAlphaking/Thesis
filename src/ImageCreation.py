@@ -16,6 +16,7 @@ class ImageCreation:
     def getImage(self, ocr_text):
         img = self.getBackground()
         I1 = ImageDraw.Draw(img)
-        myFont = ImageFont.truetype('arial.ttf', 10)
-        I1.text((10, 10), ocr_text, font=myFont, fill=(0, 0, 0))
+        # myFont = ImageFont.truetype('../fonts/BreitkopfFraktur.ttf', 10)
+        I1.text((10, 10), ocr_text, fill=(0, 0, 0))
+        # I1.text((10, 10), ocr_text, font=myFont, fill=(0, 0, 0))
         img.save(self.output_path)

@@ -19,8 +19,8 @@ device_num = 0 if torch.cuda.is_available() else -1
 device = "cpu" if device_num < 0 else f"cuda:{device_num}"
 
 print(device_num, device)
-tokenizer = AutoTokenizer.from_pretrained("yhavinga/t5-base-36L-ccmatrix-multi")
-model = AutoModelForSeq2SeqLM.from_pretrained("yhavinga/t5-base-36L-ccmatrix-multi").to(device)
+tokenizer = AutoTokenizer.from_pretrained("yhavinga/t5-small-24L-ccmatrix-multi")
+model = AutoModelForSeq2SeqLM.from_pretrained("yhavinga/t5-small-24L-ccmatrix-multi").to(device)
 params = {"max_length": 128, "num_beams": 4, "early_stopping": True}
 en_to_nl = pipeline("translation_en_to_nl", tokenizer=tokenizer, model=model, device=device_num)
 print(en_to_nl("""Young Wehling was hunched in his chair, his head in his hand. He was so rumpled, so still and colorless as to be virtually invisible.""",
