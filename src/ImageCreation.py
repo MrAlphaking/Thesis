@@ -1,4 +1,6 @@
 # Importing the PIL library
+import logging
+logging.getLogger('PIL').setLevel(logging.WARNING)
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
