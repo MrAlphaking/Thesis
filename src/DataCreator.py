@@ -1,4 +1,5 @@
 from DataCleaner import *
+from TextStatistics import *
 from OCR import *
 from ImageCreation import *
 import pandas as pd
@@ -19,12 +20,16 @@ ImageCreation = ImageCreation(image_path, output_path)
 
 ocr = OCR()
 data = get_data()
-print(data)
+statistics = TextStatistics()
+statistics.print_wordcount(data)
+
+# print(data)
 corrections = []
 
-for source in data[:100]:
-    ImageCreation.getImage(source)
-    target = ocr.get_ocr(output_path).strip("\n")
+for target in data[:100]:
+    # print(target)
+    ImageCreation.getImage(target)
+    source = ocr.get_ocr(output_path).strip("\n")
     corrections.append((source, target))
     logging.info(f"{source} -> {target}")
 

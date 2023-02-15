@@ -1,8 +1,5 @@
-import os
-import re
-from pathlib import Path
 from TextExtractor import TextExtractor
-from TextStatistics import TextStatistics
+from src.TextStatistics import TextStatistics
 import phunspell
 
 # import neuspell
