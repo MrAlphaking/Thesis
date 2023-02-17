@@ -18,20 +18,22 @@ image_path = "../images/white.jpg"
 output_path = "../images/white-edited.jpg"
 ImageCreation = ImageCreation(image_path, output_path)
 
-ocr = OCR()
-data = get_data()
-statistics = TextStatistics()
-statistics.print_wordcount(data)
+def get_dataframe():
+    ocr = OCR()
+    df = get_data().head(10).drop('Unnamed: 0', axis=1)
+    statistics = TextStatistics()
+    sources = []
 
-# print(data)
-corrections = []
+    for index, row in df.iterrows():
+        target = row['target']
+        ImageCreation.getImage(target)
+        source = ocr.get_ocr(output_path).strip("\n")
+        sources.append(source)
+        logging.info(f"{target} -> {source}")
 
-for target in data[:100]:
-    # print(target)
-    ImageCreation.getImage(target)
-    source = ocr.get_ocr(output_path).strip("\n")
-    corrections.append((source, target))
-    logging.info(f"{source} -> {target}")
+    df['source'] = sources
+    print(df)
+    print(df.head())
+    print(df.columns)
 
-df = pd.DataFrame(corrections, columns = ["source", "target"])
-print(df)
+get_dataframe()

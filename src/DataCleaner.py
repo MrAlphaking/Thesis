@@ -7,8 +7,8 @@ from src.utils.Delpher import Delpher
 
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 50
-READ_FROM_FILE = False
-WRITE_TO_FILE = True
+READ_FROM_FILE = True
+WRITE_TO_FILE = False
 
 BASE_PATH = '../../data/Ground Truth/'
 SAVE_FILE_PATH = BASE_PATH + "total"
@@ -183,11 +183,15 @@ def get_17thcenturynewspaper():
 
 def get_data():
     if READ_FROM_FILE:
-        return read_pandas(SAVE_FILE_PATH)
+        df = read_pandas(SAVE_FILE_PATH)
+        print(df.head())
+        return df
     else:
+
         get_historical_newspaper()
         seventeenth_century_newspapers = get_17thcenturynewspaper()
         print(seventeenth_century_newspapers.head())
+
         impact_newspapers = get_impact('Newspapers')
         impact_books = get_impact('Books')
         impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
@@ -200,6 +204,7 @@ def get_data():
         logging.info(f'Amount of data before cleaning: {len(df.index)}')
         df = clean_dataframe(df)
         logging.info(f'Amount of data after cleaning: {len(df.index)}')
+        print(df.head())
         # total = remove_duplicates(total)
         # logging.info(f'Amount of data after removing duplicates: {len(total)}')
         if WRITE_TO_FILE:
