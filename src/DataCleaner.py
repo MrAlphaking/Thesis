@@ -3,8 +3,7 @@ import os
 import xml.etree.ElementTree as ET
 import regex as re
 import pandas as pd
-import gzip
-import json
+from src.utils.Delpher import Delpher
 
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 50
@@ -14,6 +13,7 @@ WRITE_TO_FILE = True
 BASE_PATH = '../../data/Ground Truth/'
 SAVE_FILE_PATH = BASE_PATH + "total"
 
+delpher = Delpher()
 ##### Utils
 
 def remove_duplicates(data):
@@ -41,8 +41,6 @@ def clean_line(line, df):
     # return_list.append(line)
     # df.loc[i] = ['name' + str(i)] + list(randint(10, size=2))
     return
-
-
 
 def clean_dataframe(df):
     df['target'] = df['target'].apply(lambda x: x.strip())
@@ -98,9 +96,6 @@ def create_year_list(year, count):
 
 ##### Code
 
-
-
-
 def get_statenvertaling():
     lines = get_txt('Statenvertaling - 1637')
 
@@ -109,9 +104,6 @@ def get_statenvertaling():
     print(df.head())
     return df
     # print(df.to_string())
-
-
-
 
 def get_impact(path):
     logging.info(f'Reading in {path}')
@@ -132,7 +124,6 @@ def get_impact(path):
     return_frame = pd.DataFrame(lines, columns=["target", "year"])
     return return_frame
 
-
 def get_dbnl_books():
     logging.info(f'Reading in Books 2')
     path = f'../../data/Ground Truth/Books 2/TXT'
@@ -152,39 +143,57 @@ def get_dbnl_books():
 
 def get_historical_newspaper():
     df = pd.read_csv(f'{BASE_PATH}Newspapers 2/historical_newspaper_groundtruth.csv')
-    # print(df.columns)
+    print(df.columns)
     # print(df['identifier'])
-    return_list = []
-    for item in list(df["gt text"]):
-        return_list = [*return_list, *item.split('.')]
+    years = []
+    for item in list(df["identifier"]):
+        # return_list = [*return_list, *item.split('.')]
+        print(item)
+        item = re.sub('_[0-9][0-9][0-9].jp2_ocr', '', item).replace("_", ":").lower() + ":mpeg21"
+        print(item)
 
+        year = delpher.get_year(item)
+        print(year)
+        years.append(year)
         # TODO: Add year from Delpher API here
 
-    return return_list
+    df['year'] = years
+    df = df.drop(['Unnamed: 0', 'identifier', 'ocr_text'], axis=1)
+    df = df.rename(columns={'gt text': 'target'})
+    return df
 
 def get_17thcenturynewspaper():
     df = pd.read_csv(f'{BASE_PATH}17thcenturynewspapers.csv', compression='gzip')
-    print(df['identifier'])
-    return_list = []
-    for item in list(df["gt text"]):
-        return_list = [*return_list, *item.split('.')]
-
+    # print(df['identifier'])
+    # print(df.columns)
+    years = []
+    for item in list(df["identifier"]):
+        # return_list = [*return_list, *item.split('.')]
+        # print(item)
+        item = re.sub(':a[0-9][0-9][0-9][0-9]', '', item)
+        year = Delpher.get_year(item)
+        years.append(year)
         # TODO: Add year from Delpher API here
 
-    return return_list
+    df['year'] = years
+    df = df.drop(['Unnamed: 0', 'identifier', 'ocr_text'], axis=1)
+    df = df.rename(columns={'gt text': 'target'})
+
+    return df
 
 def get_data():
     if READ_FROM_FILE:
         return read_pandas(SAVE_FILE_PATH)
     else:
         get_historical_newspaper()
+        seventeenth_century_newspapers = get_17thcenturynewspaper()
+        print(seventeenth_century_newspapers.head())
         impact_newspapers = get_impact('Newspapers')
         impact_books = get_impact('Books')
         impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
         impact_radiobulletins = get_impact('Radio Bulletins')
         statenvertaling = get_statenvertaling()
         # dbnl_books = get_dbnl_books()
-        # seventeenth_century_newspaper = get_17thcenturynewspaper()
 
         df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling]#, dbnl_books, seventeenth_century_newspaper]
         df = pd.concat(df)
