@@ -6,9 +6,9 @@ import pandas as pd
 from src.utils.Delpher import Delpher
 
 MIN_CHARACTERS = 5
-MAX_CHARACTERS = 50
+MAX_CHARACTERS = 10000
 READ_FROM_FILE = True
-WRITE_TO_FILE = False
+
 
 BASE_PATH = '../../data/Ground Truth/'
 SAVE_FILE_PATH = BASE_PATH + "total"
@@ -43,12 +43,14 @@ def clean_line(line, df):
     return
 
 def clean_dataframe(df):
+    df['target'] = df['target'].apply(lambda x: str(x))
     df['target'] = df['target'].apply(lambda x: x.strip())
     df['target'] = df['target'].apply(lambda x: re.sub('[^A-Za-z0-9,.\s]+', '', x))
 
     df = df[df['target'].apply(lambda x: x.count(' ') > MIN_CHARACTERS)]
     df = df[df['target'].apply(lambda x: x.count(' ') < MAX_CHARACTERS)]
     df = df[df['target'].apply(lambda x: not(any(char.isdigit() for char in x)))]
+    df = df[df['year'].apply(lambda x: x != '0000')]
     df.reset_index(drop=True)
     print(df)
     return df
@@ -98,10 +100,8 @@ def create_year_list(year, count):
 
 def get_statenvertaling():
     lines = get_txt('Statenvertaling - 1637')
-
     years = create_year_list(1637, len(lines))
     df = pd.DataFrame(merge(lines, years), columns=["target", "year"])
-    print(df.head())
     return df
     # print(df.to_string())
 
@@ -111,7 +111,7 @@ def get_impact(path):
     path = f'../../data/Ground Truth/{path}/xml/'
     lines = []
 
-    for file in os.listdir(path)[:1]:
+    for file in os.listdir(path):
         Did = int(file.replace(".xml", "").lstrip('0'))
         year = df.loc[df['Did'] == Did].reset_index(drop=True).at[0, 'Dyear']
         filename = path + file
@@ -130,7 +130,7 @@ def get_dbnl_books():
 
     df = pd.read_excel(f'{BASE_PATH}xlsx/Metadata_DBNL_OCR_v1.xlsx')
     lines = []
-    for file in os.listdir(path)[:1]:
+    for file in os.listdir(path):
         Did = file.replace(".txt", "")
         year = df.loc[df['ti_id'] == Did].reset_index(drop=True).at[0, 'jaar']
         results = get_txt(f'Books 2/TXT/{file}')
@@ -142,20 +142,13 @@ def get_dbnl_books():
     return return_frame
 
 def get_historical_newspaper():
+    logging.info(f'Reading in historical newspapers')
     df = pd.read_csv(f'{BASE_PATH}Newspapers 2/historical_newspaper_groundtruth.csv')
-    print(df.columns)
-    # print(df['identifier'])
     years = []
     for item in list(df["identifier"]):
-        # return_list = [*return_list, *item.split('.')]
-        print(item)
         item = re.sub('_[0-9][0-9][0-9].jp2_ocr', '', item).replace("_", ":").lower() + ":mpeg21"
-        print(item)
-
         year = delpher.get_year(item)
-        print(year)
         years.append(year)
-        # TODO: Add year from Delpher API here
 
     df['year'] = years
     df = df.drop(['Unnamed: 0', 'identifier', 'ocr_text'], axis=1)
@@ -163,17 +156,13 @@ def get_historical_newspaper():
     return df
 
 def get_17thcenturynewspaper():
+    logging.info(f'Reading in 17th century newspapers')
     df = pd.read_csv(f'{BASE_PATH}17thcenturynewspapers.csv', compression='gzip')
-    # print(df['identifier'])
-    # print(df.columns)
     years = []
     for item in list(df["identifier"]):
-        # return_list = [*return_list, *item.split('.')]
-        # print(item)
         item = re.sub(':a[0-9][0-9][0-9][0-9]', '', item)
         year = Delpher.get_year(item)
         years.append(year)
-        # TODO: Add year from Delpher API here
 
     df['year'] = years
     df = df.drop(['Unnamed: 0', 'identifier', 'ocr_text'], axis=1)
@@ -185,29 +174,27 @@ def get_data():
     if READ_FROM_FILE:
         df = read_pandas(SAVE_FILE_PATH)
         print(df.head())
-        return df
     else:
-
-        get_historical_newspaper()
-        seventeenth_century_newspapers = get_17thcenturynewspaper()
-        print(seventeenth_century_newspapers.head())
-
         impact_newspapers = get_impact('Newspapers')
         impact_books = get_impact('Books')
         impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
         impact_radiobulletins = get_impact('Radio Bulletins')
         statenvertaling = get_statenvertaling()
         # dbnl_books = get_dbnl_books()
+        # historical_newspaper = get_historical_newspaper()
+        # seventeenth_century_newspaper = get_17thcenturynewspaper()
 
-        df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling]#, dbnl_books, seventeenth_century_newspaper]
+        df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling]#, historical_newspaper, seventeenth_century_newspaper]
         df = pd.concat(df)
-        logging.info(f'Amount of data before cleaning: {len(df.index)}')
-        df = clean_dataframe(df)
-        logging.info(f'Amount of data after cleaning: {len(df.index)}')
-        print(df.head())
-        # total = remove_duplicates(total)
-        # logging.info(f'Amount of data after removing duplicates: {len(total)}')
-        if WRITE_TO_FILE:
-            write_pandas(df, SAVE_FILE_PATH)
 
-        return df
+        write_pandas(df, SAVE_FILE_PATH)
+
+    logging.info(f'Amount of data before cleaning: {len(df.index)}')
+    df["target"] = df["target"].str.split(".")
+    df = df.explode('target').reset_index(drop=True)
+    logging.info(f'Amount of data after exploding: {len(df.index)}')
+    df = clean_dataframe(df)
+    logging.info(f'Amount of data after cleaning: {len(df.index)}')
+
+    print(df.head())
+    return df
