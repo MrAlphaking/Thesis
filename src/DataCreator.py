@@ -1,8 +1,7 @@
 from DataCleaner import *
 from TextStatistics import *
 from OCR import *
-from ImageCreation import *
-import pandas as pd
+from src.ImageProcessing.ImageCreation import *
 import logging
 import sys
 # image_path = "../images/background.jpeg"

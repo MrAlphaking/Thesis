@@ -9,8 +9,6 @@ class ImageCreation:
     def __init__(self, image_path, output_path):
         self.image_path = image_path
         self.output_path = output_path
-
-
     def getBackground(self, time_period=None):
         if time_period is None:
             return Image.open(self.image_path)

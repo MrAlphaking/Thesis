@@ -1,4 +1,4 @@
-from ImageCreation import *
+from src.ImageProcessing.ImageCreation import *
 from OCR import *
 
 if __name__ == "__main__":
