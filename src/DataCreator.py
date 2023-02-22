@@ -19,7 +19,7 @@ ImageCreation = ImageCreation(image_path, output_path)
 
 def get_dataframe():
     ocr = OCR()
-    df = get_data().head(10).drop('Unnamed: 0', axis=1)
+    df = get_data().head(100)
     statistics = TextStatistics()
     sources = []
 
@@ -34,5 +34,6 @@ def get_dataframe():
     print(df)
     print(df.head())
     print(df.columns)
+    return df
 
-get_dataframe()
+# get_dataframe()

@@ -88,9 +88,12 @@ def get_xml_element(filename, element="Unicode"):
     return lines
 
 def write_pandas(df, path):
+    logging.info(f'Writing to file: {path}')
     df.to_csv(path)
 
 def read_pandas(path):
+    logging.info(f'Reading from file: {path}')
+
     return pd.read_csv(path)
 
 def create_year_list(year, count):

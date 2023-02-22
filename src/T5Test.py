@@ -321,12 +321,12 @@ model_params = {
     "SEED": 42,  # set seed for reproducibility
 }
 
-df["text"] = "summarize: " + df["text"]
+df["source"] = "post-correction: " + df["source"]
 
 T5Trainer(
     dataframe=df,
-    source_text="text",
-    target_text="headlines",
+    source_text="source",
+    target_text="target",
     model_params=model_params,
     output_dir="outputs",
 )

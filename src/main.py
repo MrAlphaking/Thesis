@@ -1,20 +1,18 @@
 from src.ImageProcessing.ImageCreation import *
 from OCR import *
+import DataCreator
+
 
 if __name__ == "__main__":
-    # image_path = "../images/background.jpeg"
-    # output_path = "../images/background-edited.jpeg"
-
     image_path = "../images/white.jpg"
-    output_path = "../images/white-edited.jpg"
-    ImageCreation = ImageCreation(image_path, output_path)
-
-    sentences = ["Ik loop hier alleen", "In een te stille stad", "Ik heb eigenlijk nooit last", "Van heimwee gehad"]
+    output_path = "../images/white-edited2.jpg"
+    imagecreator = ImageCreation(image_path=image_path, output_path=output_path)
     ocr = OCR()
-    for sentence in sentences:
-        ImageCreation.getImage(sentence)
-        output = ocr.get_ocr(output_path).strip("\n")
-        print(f"{sentence} -> {output}")
+    imagecreator.getImage("Lorem ipsum is een opvultekst die drukkers, zetters, grafisch ontwerpers en dergelijken gebruiken om te kijken hoe een opmaak er grafisch uitziet. De eerste woorden van de tekst luiden doorgaans Lorem ipsum")
+    source = ocr.get_ocr(output_path).strip("\n")
+    print(source)
+    # df = DataCreator.get_dataframe()
+
 
 
     # Create training and evaluation dataset
