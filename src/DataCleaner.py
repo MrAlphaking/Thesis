@@ -1,17 +1,21 @@
-import logging
+# import logging
 import os
 import xml.etree.ElementTree as ET
 import regex as re
+from tqdm.contrib.telegram import tqdm
 import pandas as pd
+from src.utils.Util import *
 from src.utils.Delpher import Delpher
+
+from src.utils.Settings import *
 
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 10000
-READ_FROM_FILE = True
+# READ_FROM_FILE = False
 
 
-BASE_PATH = '../../data/Ground Truth/'
-SAVE_FILE_PATH = BASE_PATH + "total"
+# BASE_PATH = '../../data/Ground Truth/'
+# SAVE_FILE_PATH = BASE_PATH + "dataframes/target_year"
 
 delpher = Delpher()
 ##### Utils
@@ -25,22 +29,22 @@ def remove_duplicates(data):
             result.append(line)
     return result
 
-def clean_line(line, df):
-    # Check for min and max length
-    # print(line)
-    if len(line) < MIN_CHARACTERS:
-        return
-    # Check for any digit in the string
-    elif any(char.isdigit() for char in line):
-        return
-    line = line.replace("\n", "")
-    line = line.replace("<FI>", "")
-    # Remove trailing spaces
-    line = line.strip()
-    line = re.sub('[^A-Za-z0-9,.\s]+', '', line)
-    # return_list.append(line)
-    # df.loc[i] = ['name' + str(i)] + list(randint(10, size=2))
-    return
+# def clean_line(line, df):
+#     # Check for min and max length
+#     # print(line)
+#     if len(line) < MIN_CHARACTERS:
+#         return
+#     # Check for any digit in the string
+#     elif any(char.isdigit() for char in line):
+#         return
+#     line = line.replace("\n", "")
+#     line = line.replace("<FI>", "")
+#     # Remove trailing spaces
+#     line = line.strip()
+#     line = re.sub('[^A-Za-z0-9,.\s]+', '', line)
+#     # return_list.append(line)
+#     # df.loc[i] = ['name' + str(i)] + list(randint(10, size=2))
+#     return
 
 def clean_dataframe(df):
     df['target'] = df['target'].apply(lambda x: str(x))
@@ -51,17 +55,18 @@ def clean_dataframe(df):
     df = df[df['target'].apply(lambda x: x.count(' ') < MAX_CHARACTERS)]
     df = df[df['target'].apply(lambda x: not(any(char.isdigit() for char in x)))]
     df = df[df['year'].apply(lambda x: x != '0000')]
-    df.reset_index(drop=True)
-    print(df)
+    df = df.drop('Unnamed: 0', axis=1)
+    df = df.reset_index(drop=True)
+
     return df
     # return df.loc[df.target.str.contains('[^A-Za-z0-9,.\s:!]+'), :]
 
-def clean_data(data):
-    return_list = []
-    for line in data:
-        clean_line(line, return_list)
-    return_list = remove_duplicates(return_list)
-    return return_list
+# def clean_data(data):
+#     return_list = []
+#     for line in data:
+#         clean_line(line, return_list)
+#     return_list = remove_duplicates(return_list)
+#     return return_list
 
 def merge(list1, list2):
     merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))]
@@ -87,15 +92,6 @@ def get_xml_element(filename, element="Unicode"):
     # print(lines)
     return lines
 
-def write_pandas(df, path):
-    logging.info(f'Writing to file: {path}')
-    df.to_csv(path)
-
-def read_pandas(path):
-    logging.info(f'Reading from file: {path}')
-
-    return pd.read_csv(path)
-
 def create_year_list(year, count):
     return [year for i in range(count)]
 
@@ -109,12 +105,12 @@ def get_statenvertaling():
     # print(df.to_string())
 
 def get_impact(path):
-    logging.info(f'Reading in {path}')
+    print_telegram(f'Reading in {path}')
     df = pd.read_excel(f'{BASE_PATH}xlsx/impact_{path.replace(" ", "_").lower()}.xlsx')
     path = f'../../data/Ground Truth/{path}/xml/'
     lines = []
 
-    for file in os.listdir(path):
+    for file in tqdm(os.listdir(path), desc=f'impact {path}', token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID):
         Did = int(file.replace(".xml", "").lstrip('0'))
         year = df.loc[df['Did'] == Did].reset_index(drop=True).at[0, 'Dyear']
         filename = path + file
@@ -128,12 +124,15 @@ def get_impact(path):
     return return_frame
 
 def get_dbnl_books():
+    if os.path.exists(SAVE_PATH_DBNL_BOOKS) and READ_FROM_FILE_INTERMEDIATES:
+        return read_pandas(SAVE_PATH_DBNL_BOOKS)
+
     logging.info(f'Reading in Books 2')
     path = f'../../data/Ground Truth/Books 2/TXT'
 
     df = pd.read_excel(f'{BASE_PATH}xlsx/Metadata_DBNL_OCR_v1.xlsx')
     lines = []
-    for file in os.listdir(path):
+    for file in tqdm(os.listdir(path), desc='dbnl_books', token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID):
         Did = file.replace(".txt", "")
         year = df.loc[df['ti_id'] == Did].reset_index(drop=True).at[0, 'jaar']
         results = get_txt(f'Books 2/TXT/{file}')
@@ -142,27 +141,38 @@ def get_dbnl_books():
         lines = [*lines, *results]
 
     return_frame = pd.DataFrame(lines, columns=["target", "year"])
+
+    write_pandas(df, SAVE_PATH_DBNL_BOOKS)
     return return_frame
 
 def get_historical_newspaper():
+    if os.path.exists(SAVE_PATH_HISTORICALNEWSPAPERS) and READ_FROM_FILE_INTERMEDIATES:
+        return read_pandas(SAVE_PATH_HISTORICALNEWSPAPERS)
+
     logging.info(f'Reading in historical newspapers')
     df = pd.read_csv(f'{BASE_PATH}Newspapers 2/historical_newspaper_groundtruth.csv')
     years = []
-    for item in list(df["identifier"]):
+    print(df.columns)
+
+    for item in tqdm(list(df["identifier"]), desc='historical newspaper', token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID):
         item = re.sub('_[0-9][0-9][0-9].jp2_ocr', '', item).replace("_", ":").lower() + ":mpeg21"
         year = delpher.get_year(item)
         years.append(year)
 
     df['year'] = years
-    df = df.drop(['Unnamed: 0', 'identifier', 'ocr_text'], axis=1)
+    df = df.drop(['Unnamed: 0', 'identifier', 'ocr text'], axis=1)
     df = df.rename(columns={'gt text': 'target'})
+
+    write_pandas(df, SAVE_PATH_HISTORICALNEWSPAPERS)
     return df
 
 def get_17thcenturynewspaper():
+    if os.path.exists(SAVE_PATH_17THCENTURYNEWSPAPER) and READ_FROM_FILE_INTERMEDIATES:
+        return read_pandas(SAVE_PATH_17THCENTURYNEWSPAPER)
     logging.info(f'Reading in 17th century newspapers')
     df = pd.read_csv(f'{BASE_PATH}17thcenturynewspapers.csv', compression='gzip')
     years = []
-    for item in list(df["identifier"]):
+    for item in tqdm(list(df["identifier"]), desc='17thcenturynewspaper', token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID):
         item = re.sub(':a[0-9][0-9][0-9][0-9]', '', item)
         year = Delpher.get_year(item)
         years.append(year)
@@ -170,34 +180,35 @@ def get_17thcenturynewspaper():
     df['year'] = years
     df = df.drop(['Unnamed: 0', 'identifier', 'ocr_text'], axis=1)
     df = df.rename(columns={'gt text': 'target'})
-
+    write_pandas(df, SAVE_PATH_17THCENTURYNEWSPAPER)
     return df
 
 def get_data():
-    if READ_FROM_FILE:
-        df = read_pandas(SAVE_FILE_PATH)
-        print(df.head())
+    if READ_FROM_FILE_PRE_OCR:
+        df = read_pandas(SAVE_PATH_PRE_OCR)
     else:
+        historical_newspaper = get_historical_newspaper()
+        # dbnl_books = get_dbnl_books()
+        # seventeenth_century_newspaper = get_17thcenturynewspaper()
+
         impact_newspapers = get_impact('Newspapers')
         impact_books = get_impact('Books')
         impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
         impact_radiobulletins = get_impact('Radio Bulletins')
         statenvertaling = get_statenvertaling()
-        # dbnl_books = get_dbnl_books()
-        # historical_newspaper = get_historical_newspaper()
-        # seventeenth_century_newspaper = get_17thcenturynewspaper()
 
-        df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling]#, historical_newspaper, seventeenth_century_newspaper]
+
+        df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling, historical_newspaper]#, seventeenth_century_newspaper]
         df = pd.concat(df)
 
-        write_pandas(df, SAVE_FILE_PATH)
+        if WRITE_FILE_PRE_OCR:
+            write_pandas(df, SAVE_PATH_PRE_OCR)
 
-    logging.info(f'Amount of data before cleaning: {len(df.index)}')
+    print_telegram(f'Amount of data before cleaning: {len(df.index)}')
     df["target"] = df["target"].str.split(".")
     df = df.explode('target').reset_index(drop=True)
-    logging.info(f'Amount of data after exploding: {len(df.index)}')
+    print_telegram(f'Amount of data after exploding: {len(df.index)}')
     df = clean_dataframe(df)
-    logging.info(f'Amount of data after cleaning: {len(df.index)}')
-
-    print(df.head())
+    print_telegram(f'Amount of data after cleaning: {len(df.index)}')
+    # print(df)
     return df

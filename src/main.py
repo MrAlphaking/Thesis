@@ -1,18 +1,21 @@
 from src.ImageProcessing.ImageCreation import *
 from OCR import *
+from src.utils.Util import print_telegram
 import DataCreator
 
 
 if __name__ == "__main__":
-    image_path = "../images/white.jpg"
-    output_path = "../images/white-edited2.jpg"
-    imagecreator = ImageCreation(image_path=image_path, output_path=output_path)
-    ocr = OCR()
-    imagecreator.getImage("Lorem ipsum is een opvultekst die drukkers, zetters, grafisch ontwerpers en dergelijken gebruiken om te kijken hoe een opmaak er grafisch uitziet. De eerste woorden van de tekst luiden doorgaans Lorem ipsum")
-    source = ocr.get_ocr(output_path).strip("\n")
-    print(source)
-    # df = DataCreator.get_dataframe()
+    # image_path = "../images/white.jpg"
+    # output_path = "../images/white-edited2.jpg"
+    # imagecreator = ImageCreation(image_path=image_path, output_path=output_path)
+    # ocr = OCR()
+    # imagecreator.getImage("Lorem ipsum is een opvultekst die drukkers, zetters, grafisch ontwerpers en dergelijken gebruiken om te kijken hoe een opmaak er grafisch uitziet. De eerste woorden van de tekst luiden doorgaans Lorem ipsum")
+    # source = ocr.get_ocr(output_path).strip("\n")
+    # print(source)
+    print_telegram("----------------------------------------------------------------------------")
+    print_telegram("PROGRAM HAS BEEN INITIATED")
 
+    df = DataCreator.get_dataframe()
 
 
     # Create training and evaluation dataset

@@ -33,5 +33,5 @@ class Delpher:
                 self.year_dict[identifier] = year
                 return year
             else:
-                self.year_dict[identifier] = '000'
+                self.year_dict[identifier] = '0000'
                 return '0000'

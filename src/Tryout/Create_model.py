@@ -1,5 +1,5 @@
 from TextExtractor import TextExtractor
-from src.TextStatistics import TextStatistics
+from src.Tryout.TextStatistics import TextStatistics
 import phunspell
 
 # import neuspell
