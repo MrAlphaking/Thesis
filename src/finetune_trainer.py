@@ -8,20 +8,17 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration, AutoTokenizer,
 from transformers import TFT5ForConditionalGeneration
 import wandb
 import DataCreator
+from src.utils.Util import *
 
 import os
 
 if not os.path.exists(MODEL_SAVE_FOLDER + '/predictions'):
    os.makedirs(MODEL_SAVE_FOLDER + '/predictions' )
 # PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
-# print(torch.cuda.memory_summary(device=None, abbreviated=False))
-# gc.collect()
-#
-# torch.cuda.empty_cache()
 
 def get_device():
-    return 'cpu'
-    # return 'cuda' if cuda.is_available() else 'cpu'
+    # return 'cpu'
+    return 'cuda' if cuda.is_available() else 'cpu'
 
 
 class T5Dataset(Dataset):
@@ -102,7 +99,7 @@ class Trainer:
                 wandb.log({"Training Loss": loss.item()})
 
             if _ % 500 == 0:
-                print(f'Epoch: {epoch}, Loss:  {loss.item()}')
+                print_telegram(f'Epoch: {epoch}, Loss:  {loss.item()}')
 
             optimizer.zero_grad()
 
@@ -145,7 +142,7 @@ class Trainer:
                 source = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=True) for t in ids]
 
                 if _ % 100 == 0:
-                    print(f'Completed {_}')
+                    print_telegram(f'Validation completed until {_}')
 
                 predictions.extend(preds)
 
@@ -161,10 +158,10 @@ class Trainer:
         config = wandb.config
 
         # TODO Set the batch size during training
-        config.TRAIN_BATCH_SIZE = 2
+        config.TRAIN_BATCH_SIZE = 4
 
         # TODO Set the batch size at validation time
-        config.VALID_BATCH_SIZE = 2
+        config.VALID_BATCH_SIZE = 4
 
         # TODO Set your training epochs
         config.TRAIN_EPOCHS = 3
@@ -180,10 +177,10 @@ class Trainer:
 
         # TODO What is the ma length of your input ? (Note that the input is consist of source text and context if training sentence doctor).
         #  Refer to the documentation under Usage if you don't know what is meant by context.
-        config.SOURCE_MAX_LEN = 64
+        config.SOURCE_MAX_LEN = 256
 
         # TODO What is the max length of your output ?
-        config.TARGET_MAX_LEN = 64
+        config.TARGET_MAX_LEN = 256
 
         torch.manual_seed(config.SEED)
 
@@ -197,7 +194,7 @@ class Trainer:
 
         # df = pd.read_csv(path_to_training_data, encoding='utf-8', delimiter=delimiter)
 
-        print(df.head())
+        print_telegram(df.head())
 
         # TODO Change the training size. Use a lower training size if you have less data
         train_size = 0.8
@@ -205,14 +202,14 @@ class Trainer:
         train_dataset = df.sample(frac=train_size, random_state=config.SEED)
 
         val_dataset = df.drop(train_dataset.index).reset_index(drop=True)
-        # print()
+        # print_telegram()
         train_dataset = train_dataset.reset_index(drop=True)
 
-        print("FULL Dataset: {}".format(df.shape))
+        print_telegram("FULL Dataset: {}".format(df.shape))
 
-        print("TRAIN Dataset: {}".format(train_dataset.shape))
+        print_telegram("TRAIN Dataset: {}".format(train_dataset.shape))
 
-        print("TEST Dataset: {}".format(val_dataset.shape))
+        print_telegram("TEST Dataset: {}".format(val_dataset.shape))
 
         # TODO Change the name of the attributes specifying the input text and the output text.
         #  i used source for input and target for output as column names in my pandas dataframe
@@ -251,7 +248,7 @@ class Trainer:
 
         wandb.watch(model, log="all")
 
-        print('Initiating Fine-Tuning for the model on our dataset')
+        print_telegram('Initiating Fine-Tuning for the model on our dataset')
 
         for epoch in range(config.TRAIN_EPOCHS):
             self.train(epoch, tokenizer, training_loader, model, device, optimizer)
@@ -264,7 +261,7 @@ class Trainer:
                 # TODO Change the location of the predictions during evaluation
                 final_df.to_csv(f'{MODEL_SAVE_FOLDER}/predictions/predictions-epoch-{epoch}.csv')
 
-                print('Output Files generated for review')
+                print_telegram('Output Files generated for review')
 
         # TODO Give a cool name to your awesome model
         tokenizer.save_pretrained(MODEL_SAVE_FOLDER)
@@ -278,10 +275,10 @@ if __name__ == '__main__':
     # TODO Where is your data ? Enter the path
     df = DataCreator.get_dataframe()
     # df = df.head(10)
-    print(df.columns)
+    print_telegram(df.columns)
     df = df.drop(['Unnamed: 0', 'Unnamed: 0.1', 'year'], axis=1)
-    df = df.head(DATASET_SIZE)
-    print(df.columns)
+    df = df.sample(DATASET_SIZE)
+    print_telegram(df.columns)
     df['source'] = "post-correction: " + df['source']
 
     trainer.start(df)
