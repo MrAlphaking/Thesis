@@ -2,11 +2,22 @@ from torch import cuda
 import numpy as np
 import pandas as pd
 import torch
+from src.utils.Settings import *
 from torch.utils.data import Dataset, DataLoader
 from transformers import T5Tokenizer, T5ForConditionalGeneration, AutoTokenizer, AutoModelForSeq2SeqLM
 from transformers import TFT5ForConditionalGeneration
 import wandb
 import DataCreator
+
+import gc
+# PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+print(torch.cuda.memory_summary(device=None, abbreviated=False))
+gc.collect()
+
+torch.cuda.empty_cache()
+
+import os
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH']='true'
 
 
 def get_device():
@@ -47,6 +58,7 @@ class T5Dataset(Dataset):
         target = self.__tokenizer.batch_encode_plus([target_text],
                                                     truncation=True,
                                                     max_length=self.__target_text_len,
+
                                                     pad_to_max_length=True,
                                                     return_tensors='pt')
 
@@ -57,10 +69,10 @@ class T5Dataset(Dataset):
         target_ids = target['input_ids'].squeeze()
 
         return {
-            'source_ids': source_ids.to(dtype=torch.long),
-            'source_mask': source_mask.to(dtype=torch.long),
-            'target_ids': target_ids.to(dtype=torch.long),
-            'target_ids_y': target_ids.to(dtype=torch.long)
+            'source_ids': source_ids.to(dtype=TENSOR_DTYPE),
+            'source_mask': source_mask.to(dtype=TENSOR_DTYPE),
+            'target_ids': target_ids.to(dtype=TENSOR_DTYPE),
+            'target_ids_y': target_ids.to(dtype=TENSOR_DTYPE)
         }
 
 
@@ -71,7 +83,7 @@ class Trainer:
 
         for _, data in enumerate(data_loader, 0):
 
-            y = data['target_ids'].to(device, dtype=torch.long)
+            y = data['target_ids'].to(device, dtype=TENSOR_DTYPE)
 
             y_ids = y[:, :-1].contiguous()
 
@@ -79,9 +91,9 @@ class Trainer:
 
             lm_labels[y[:, 1:] == tokenizer.pad_token_id] = -100
 
-            ids = data['source_ids'].to(device, dtype=torch.long)
+            ids = data['source_ids'].to(device, dtype=TENSOR_DTYPE)
 
-            mask = data['source_mask'].to(device, dtype=torch.long)
+            mask = data['source_mask'].to(device, dtype=TENSOR_DTYPE)
 
             outputs = model(input_ids=ids, attention_mask=mask, decoder_input_ids=y_ids, labels=lm_labels)
 
@@ -108,11 +120,11 @@ class Trainer:
 
         with torch.no_grad():
             for _, data in enumerate(loader, 0):
-                y = data['target_ids'].to(device, dtype=torch.long)
+                y = data['target_ids'].to(device, dtype=TENSOR_DTYPE)
 
-                ids = data['source_ids'].to(device, dtype=torch.long)
+                ids = data['source_ids'].to(device, dtype=TENSOR_DTYPE)
 
-                mask = data['source_mask'].to(device, dtype=torch.long)
+                mask = data['source_mask'].to(device, dtype=TENSOR_DTYPE)
 
                 # TODO make sure you modify the max_length and/or the number of beams
                 generated_ids = model.generate(
@@ -145,13 +157,13 @@ class Trainer:
         config = wandb.config
 
         # TODO Set the batch size during training
-        config.TRAIN_BATCH_SIZE = 8
+        config.TRAIN_BATCH_SIZE = 2
 
         # TODO Set the batch size at validation time
-        config.VALID_BATCH_SIZE = 8
+        config.VALID_BATCH_SIZE = 2
 
         # TODO Set your training epochs
-        config.TRAIN_EPOCHS = 5
+        config.TRAIN_EPOCHS = 3
 
         # TODO Set the validation epochs
         config.VAL_EPOCHS = 1
@@ -164,10 +176,10 @@ class Trainer:
 
         # TODO What is the ma length of your input ? (Note that the input is consist of source text and context if training sentence doctor).
         #  Refer to the documentation under Usage if you don't know what is meant by context.
-        config.SOURCE_MAX_LEN = 64
+        config.SOURCE_MAX_LEN = 256
 
         # TODO What is the max length of your output ?
-        config.TARGET_MAX_LEN = 64
+        config.TARGET_MAX_LEN = 256
 
         torch.manual_seed(config.SEED)
 
@@ -184,7 +196,7 @@ class Trainer:
         print(df.head())
 
         # TODO Change the training size. Use a lower training size if you have less data
-        train_size = 0.985
+        train_size = 0.9
 
         train_dataset = df.sample(frac=train_size, random_state=config.SEED)
 
@@ -246,14 +258,14 @@ class Trainer:
                 final_df = pd.DataFrame({'Repaired': predictions, 'Original': actuals})
 
                 # TODO Change the location of the predictions during evaluation
-                final_df.to_csv('./predictions.csv')
+                final_df.to_csv('models/predictions.csv')
 
                 print('Output Files generated for review')
 
         # TODO Give a cool name to your awesome model
-        tokenizer.save_pretrained("models/t5-base-multi-your-sentence-doctor")
+        tokenizer.save_pretrained(MODEL_SAVE_NAME)
 
-        model.save_pretrained("models/t5-base-multi-your-sentence-doctor")
+        model.save_pretrained(MODEL_SAVE_NAME)
 
 
 if __name__ == '__main__':
@@ -261,7 +273,11 @@ if __name__ == '__main__':
 
     # TODO Where is your data ? Enter the path
     df = DataCreator.get_dataframe()
-    df = df.head(100)
-    df['source'] = "repair-sentence: " + df['source']
+    # df = df.head(10)
+    print(df.columns)
+    df = df.drop(['Unnamed: 0', 'Unnamed: 0.1', 'year'], axis=1)
+    df = df.sample(3000)
+    print(df.columns)
+    df['source'] = "post-correction: " + df['source']
 
     trainer.start(df)

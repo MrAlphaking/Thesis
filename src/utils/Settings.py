@@ -1,3 +1,5 @@
+import torch
+
 BASE_PATH = '../../data/Ground Truth/'
 #BASE_PATH = '/media/sf_GitHub/data/Ground Truth/'
 
@@ -28,3 +30,5 @@ TELEGRAM_CHAT_ID = "6198204545"
 # T5Model
 
 NUMBER_OF_EPOCHS = 1
+TENSOR_DTYPE = torch.long
+MODEL_SAVE_NAME = 'models/t5-base-dutch-post-correction1'

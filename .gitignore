@@ -168,3 +168,4 @@ src/cache_dir/
 *.jpg
 /src/predictions.csv
 /src/t5-base-multi-your-sentence-doctor/
+/src/models/

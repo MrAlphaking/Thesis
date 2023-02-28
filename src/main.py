@@ -19,18 +19,21 @@ if __name__ == "__main__":
 
     #df = DataCreator.get_dataframe()
 
-    device_num = 0 if torch.cuda.is_available() else -1
-    device = "cpu" if device_num < 0 else f"cuda:{device_num}"
+    from transformers import AutoTokenizer, AutoModelWithLMHead
 
-    print(device_num, device)
-    tokenizer = AutoTokenizer.from_pretrained("outputs/model_files")
-    model = AutoModelForSeq2SeqLM.from_pretrained("outputs/model_files").to(device)
-    params = {"max_length": 128, "num_beams": 4, "early_stopping": True}
-    post_correct = pipeline("post-correction" , tokenizer=tokenizer, model=model, device=device_num)
-    print(post_correct(
-        """Hallo ik ban thomas""",
-        **params)[0]['translation_text'])
+    tokenizer = AutoTokenizer.from_pretrained("models/t5-base-dutch-post-correction")
 
+    model = AutoModelWithLMHead.from_pretrained("models/t5-base-dutch-post-correction")
+
+    input_text = "post-correction: komt u allen tesaamen</s>"
+
+    input_ids = tokenizer.encode(input_text, return_tensors="pt")
+
+    outputs = model.generate(input_ids, max_length=256, num_beams=1)
+
+    sentence = tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+
+    print(sentence)
 
     # Create training and evaluation dataset
     # OCR data collection
