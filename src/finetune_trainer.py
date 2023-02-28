@@ -99,7 +99,7 @@ class Trainer:
                 wandb.log({"Training Loss": loss.item()})
 
             if _ % 500 == 0:
-                print_telegram(f'Epoch: {epoch}, Loss:  {loss.item()}')
+                print_telegram(f'Epoch: {epoch}, Loss:  {loss.item()} at {_}')
 
             optimizer.zero_grad()
 
@@ -164,7 +164,7 @@ class Trainer:
         config.VALID_BATCH_SIZE = 4
 
         # TODO Set your training epochs
-        config.TRAIN_EPOCHS = 3
+        config.TRAIN_EPOCHS = 5
 
         # TODO Set the validation epochs
         config.VAL_EPOCHS = 1
@@ -197,7 +197,7 @@ class Trainer:
         print_telegram(df.head())
 
         # TODO Change the training size. Use a lower training size if you have less data
-        train_size = 0.8
+        train_size = 0.985
 
         train_dataset = df.sample(frac=train_size, random_state=config.SEED)
 
