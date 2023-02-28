@@ -151,7 +151,7 @@ class Trainer:
         config.VALID_BATCH_SIZE = 8
 
         # TODO Set your training epochs
-        config.TRAIN_EPOCHS = 3
+        config.TRAIN_EPOCHS = 5
 
         # TODO Set the validation epochs
         config.VAL_EPOCHS = 1
@@ -167,7 +167,7 @@ class Trainer:
         config.SOURCE_MAX_LEN = 64
 
         # TODO What is the max length of your output ?
-        config.TARGET_MAX_LEN = 32
+        config.TARGET_MAX_LEN = 64
 
         torch.manual_seed(config.SEED)
 
