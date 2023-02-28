@@ -2,6 +2,8 @@ from src.ImageProcessing.ImageCreation import *
 from OCR import *
 from src.utils.Util import print_telegram
 import DataCreator
+from transformers import T5Tokenizer, T5ForConditionalGeneration, FlaxT5ForConditionalGeneration, AutoTokenizer, FlaxAutoModelForSeq2SeqLM, AutoModelForSeq2SeqLM, pipeline
+import torch
 
 
 if __name__ == "__main__":
@@ -12,10 +14,22 @@ if __name__ == "__main__":
     # imagecreator.getImage("Lorem ipsum is een opvultekst die drukkers, zetters, grafisch ontwerpers en dergelijken gebruiken om te kijken hoe een opmaak er grafisch uitziet. De eerste woorden van de tekst luiden doorgaans Lorem ipsum")
     # source = ocr.get_ocr(output_path).strip("\n")
     # print(source)
-    print_telegram("----------------------------------------------------------------------------")
-    print_telegram("PROGRAM HAS BEEN INITIATED")
+    #print_telegram("----------------------------------------------------------------------------")
+    #print_telegram("PROGRAM HAS BEEN INITIATED")
 
-    df = DataCreator.get_dataframe()
+    #df = DataCreator.get_dataframe()
+
+    device_num = 0 if torch.cuda.is_available() else -1
+    device = "cpu" if device_num < 0 else f"cuda:{device_num}"
+
+    print(device_num, device)
+    tokenizer = AutoTokenizer.from_pretrained("outputs/model_files")
+    model = AutoModelForSeq2SeqLM.from_pretrained("outputs/model_files").to(device)
+    params = {"max_length": 128, "num_beams": 4, "early_stopping": True}
+    post_correct = pipeline("post-correction" , tokenizer=tokenizer, model=model, device=device_num)
+    print(post_correct(
+        """Hallo ik ban thomas""",
+        **params)[0]['translation_text'])
 
 
     # Create training and evaluation dataset

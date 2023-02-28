@@ -1,10 +1,11 @@
 import pandas as pd
 import DataCreator
-
+from src.utils.Settings import *
+from src.utils.Util import *
 df = DataCreator.get_dataframe()
-# df = pd.read_csv(path)
+df = df.head(100)
 
-df = df.head(10)
+from tqdm.contrib.telegram import tqdm
 
 import os
 import numpy as np
@@ -15,7 +16,7 @@ from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampl
 import os
 
 # Importing the T5 modules from huggingface/transformers
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5ForConditionalGeneration, AutoTokenizer, AutoModelForSeq2SeqLM
 
 # rich: for a better display on terminal
 from rich.table import Column, Table
@@ -213,11 +214,13 @@ def T5Trainer(
     console.log(f"""[Model]: Loading {model_params["MODEL"]}...\n""")
 
     # tokenzier for encoding the text
-    tokenizer = T5Tokenizer.from_pretrained(model_params["MODEL"])
+    #tokenizer = T5Tokenizer.from_pretrained(model_params["MODEL"])
+    tokenizer = AutoTokenizer.from_pretrained(model_params["MODEL"])
 
     # Defining the model. We are using t5-base model and added a Language model layer on top for generation of Summary.
     # Further this model is sent to device (GPU/TPU) for using the hardware.
-    model = T5ForConditionalGeneration.from_pretrained(model_params["MODEL"])
+    #model = T5ForConditionalGeneration.from_pretrained(model_params["MODEL"])
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_params["MODEL"])
     model = model.to(device)
 
     # logging
@@ -292,7 +295,7 @@ def T5Trainer(
 
     # evaluating test dataset
     console.log(f"[Initiating Validation]...\n")
-    for epoch in range(model_params["VAL_EPOCHS"]):
+    for epoch in tqdm(range(model_params["VAL_EPOCHS"]), token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID):
         predictions, actuals = validate(epoch, tokenizer, model, device, val_loader)
         final_df = pd.DataFrame({"Generated Text": predictions, "Actual Text": actuals})
         final_df.to_csv(os.path.join(output_dir, "predictions.csv"))
@@ -310,14 +313,14 @@ def T5Trainer(
 
 # let's define model parameters specific to T5
 model_params = {
-    "MODEL": "t5-base",  # model_type: t5-base/t5-large
+    "MODEL": "yhavinga/t5-base-dutch",  # model_type: t5-base/t5-large
     "TRAIN_BATCH_SIZE": 8,  # training batch size
     "VALID_BATCH_SIZE": 8,  # validation batch size
-    "TRAIN_EPOCHS": 3,  # number of training epochs
+    "TRAIN_EPOCHS": NUMBER_OF_EPOCHS,  # number of training epochs
     "VAL_EPOCHS": 1,  # number of validation epochs
     "LEARNING_RATE": 1e-4,  # learning rate
-    "MAX_SOURCE_TEXT_LENGTH": 512,  # max length of source text
-    "MAX_TARGET_TEXT_LENGTH": 50,  # max length of target text
+    "MAX_SOURCE_TEXT_LENGTH": 256,  # max length of source text
+    "MAX_TARGET_TEXT_LENGTH": 256,  # max length of target text
     "SEED": 42,  # set seed for reproducibility
 }
 
@@ -330,3 +333,5 @@ T5Trainer(
     model_params=model_params,
     output_dir="outputs",
 )
+
+print_telegram("Succesfully trained model")
