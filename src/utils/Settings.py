@@ -1,5 +1,5 @@
-# BASE_PATH = '../../data/Ground Truth/'
-BASE_PATH = '/media/sf_GitHub/data/Ground Truth/'
+BASE_PATH = '../../data/Ground Truth/'
+#BASE_PATH = '/media/sf_GitHub/data/Ground Truth/'
 
 # DataCleaner.py
 READ_FROM_FILE_PRE_OCR = True

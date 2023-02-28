@@ -3,7 +3,7 @@ import DataCreator
 from src.utils.Settings import *
 from src.utils.Util import *
 df = DataCreator.get_dataframe()
-df = df.head(100)
+df = df.head(10)
 
 from tqdm.contrib.telegram import tqdm
 
@@ -152,6 +152,7 @@ def train(epoch, tokenizer, model, device, loader, optimizer):
             attention_mask=mask,
             decoder_input_ids=y_ids,
             labels=lm_labels,
+
         )
         loss = outputs[0]
 
@@ -314,8 +315,8 @@ def T5Trainer(
 # let's define model parameters specific to T5
 model_params = {
     "MODEL": "yhavinga/t5-base-dutch",  # model_type: t5-base/t5-large
-    "TRAIN_BATCH_SIZE": 8,  # training batch size
-    "VALID_BATCH_SIZE": 8,  # validation batch size
+    "TRAIN_BATCH_SIZE": 2,  # training batch size
+    "VALID_BATCH_SIZE": 2,  # validation batch size
     "TRAIN_EPOCHS": NUMBER_OF_EPOCHS,  # number of training epochs
     "VAL_EPOCHS": 1,  # number of validation epochs
     "LEARNING_RATE": 1e-4,  # learning rate
