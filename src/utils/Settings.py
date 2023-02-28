@@ -31,4 +31,6 @@ TELEGRAM_CHAT_ID = "6198204545"
 
 NUMBER_OF_EPOCHS = 1
 TENSOR_DTYPE = torch.long
-MODEL_SAVE_NAME = 'models/t5-base-dutch-post-correction1'
+
+DATASET_SIZE = 10
+MODEL_SAVE_FOLDER = f'models/t5-base-dutch-post-correction-{DATASET_SIZE}'

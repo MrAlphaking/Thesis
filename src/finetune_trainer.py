@@ -9,16 +9,15 @@ from transformers import TFT5ForConditionalGeneration
 import wandb
 import DataCreator
 
-import gc
-# PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
-print(torch.cuda.memory_summary(device=None, abbreviated=False))
-gc.collect()
-
-torch.cuda.empty_cache()
-
 import os
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH']='true'
 
+if not os.path.exists(MODEL_SAVE_FOLDER + '/predictions'):
+   os.makedirs(MODEL_SAVE_FOLDER + '/predictions' )
+# PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+# print(torch.cuda.memory_summary(device=None, abbreviated=False))
+# gc.collect()
+#
+# torch.cuda.empty_cache()
 
 def get_device():
     return 'cpu'
@@ -114,9 +113,10 @@ class Trainer:
     def validate(self, tokenizer: T5Tokenizer, model, device, loader):
         model.eval()
 
+        sources = []
         predictions = []
-
         actuals = []
+
 
         with torch.no_grad():
             for _, data in enumerate(loader, 0):
@@ -142,6 +142,8 @@ class Trainer:
 
                 target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=True) for t in y]
 
+                source = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=True) for t in ids]
+
                 if _ % 100 == 0:
                     print(f'Completed {_}')
 
@@ -149,7 +151,9 @@ class Trainer:
 
                 actuals.extend(target)
 
-        return predictions, actuals
+                sources.extend(source)
+
+        return predictions, actuals, sources
 
     def start(self, df, delimiter: str = "\t"):
         wandb.init(project="thesis-thomas")
@@ -176,10 +180,10 @@ class Trainer:
 
         # TODO What is the ma length of your input ? (Note that the input is consist of source text and context if training sentence doctor).
         #  Refer to the documentation under Usage if you don't know what is meant by context.
-        config.SOURCE_MAX_LEN = 256
+        config.SOURCE_MAX_LEN = 64
 
         # TODO What is the max length of your output ?
-        config.TARGET_MAX_LEN = 256
+        config.TARGET_MAX_LEN = 64
 
         torch.manual_seed(config.SEED)
 
@@ -196,12 +200,12 @@ class Trainer:
         print(df.head())
 
         # TODO Change the training size. Use a lower training size if you have less data
-        train_size = 0.9
+        train_size = 0.8
 
         train_dataset = df.sample(frac=train_size, random_state=config.SEED)
 
         val_dataset = df.drop(train_dataset.index).reset_index(drop=True)
-
+        # print()
         train_dataset = train_dataset.reset_index(drop=True)
 
         print("FULL Dataset: {}".format(df.shape))
@@ -253,19 +257,19 @@ class Trainer:
             self.train(epoch, tokenizer, training_loader, model, device, optimizer)
 
             for _ in range(config.VAL_EPOCHS):
-                predictions, actuals = self.validate(tokenizer, model, device, val_loader)
+                predictions, actuals, sources = self.validate(tokenizer, model, device, val_loader)
 
-                final_df = pd.DataFrame({'Repaired': predictions, 'Original': actuals})
+                final_df = pd.DataFrame({'Source': sources, 'Prediction': predictions, 'Target': actuals})
 
                 # TODO Change the location of the predictions during evaluation
-                final_df.to_csv('models/predictions.csv')
+                final_df.to_csv(f'{MODEL_SAVE_FOLDER}/predictions/predictions-epoch-{epoch}.csv')
 
                 print('Output Files generated for review')
 
         # TODO Give a cool name to your awesome model
-        tokenizer.save_pretrained(MODEL_SAVE_NAME)
+        tokenizer.save_pretrained(MODEL_SAVE_FOLDER)
 
-        model.save_pretrained(MODEL_SAVE_NAME)
+        model.save_pretrained(MODEL_SAVE_FOLDER)
 
 
 if __name__ == '__main__':
@@ -276,7 +280,7 @@ if __name__ == '__main__':
     # df = df.head(10)
     print(df.columns)
     df = df.drop(['Unnamed: 0', 'Unnamed: 0.1', 'year'], axis=1)
-    df = df.sample(3000)
+    df = df.head(DATASET_SIZE)
     print(df.columns)
     df['source'] = "post-correction: " + df['source']
 
