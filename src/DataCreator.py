@@ -65,5 +65,3 @@ def get_dataframe():
         write_pandas(df, SAVE_PATH_POST_OCR)
 
     return df
-
-# get_dataframe()

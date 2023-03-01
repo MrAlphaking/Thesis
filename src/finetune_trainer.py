@@ -78,21 +78,15 @@ class Trainer:
         model.train()
 
         for _, data in enumerate(data_loader, 0):
-
             y = data['target_ids'].to(device, dtype=TENSOR_DTYPE)
-
             y_ids = y[:, :-1].contiguous()
-
             lm_labels = y[:, 1:].clone().detach()
-
             lm_labels[y[:, 1:] == tokenizer.pad_token_id] = -100
 
             ids = data['source_ids'].to(device, dtype=TENSOR_DTYPE)
-
             mask = data['source_mask'].to(device, dtype=TENSOR_DTYPE)
 
             outputs = model(input_ids=ids, attention_mask=mask, decoder_input_ids=y_ids, labels=lm_labels)
-
             loss = outputs[0]
 
             if _ % 10 == 0:
@@ -102,10 +96,10 @@ class Trainer:
                 print_telegram(f'Epoch: {epoch}, Loss:  {loss.item()} at {_}')
 
             optimizer.zero_grad()
-
             loss.backward()
-
             optimizer.step()
+
+        wandb.log({"Epoch Loss": loss.item()})
 
     def validate(self, tokenizer: T5Tokenizer, model, device, loader):
         model.eval()
@@ -114,13 +108,10 @@ class Trainer:
         predictions = []
         actuals = []
 
-
         with torch.no_grad():
             for _, data in enumerate(loader, 0):
                 y = data['target_ids'].to(device, dtype=TENSOR_DTYPE)
-
                 ids = data['source_ids'].to(device, dtype=TENSOR_DTYPE)
-
                 mask = data['source_mask'].to(device, dtype=TENSOR_DTYPE)
 
                 # TODO make sure you modify the max_length and/or the number of beams
@@ -136,83 +127,48 @@ class Trainer:
 
                 preds = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=True) for g in
                          generated_ids]
-
                 target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=True) for t in y]
-
                 source = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=True) for t in ids]
 
                 if _ % 100 == 0:
                     print_telegram(f'Validation completed until {_}')
 
                 predictions.extend(preds)
-
                 actuals.extend(target)
-
                 sources.extend(source)
 
         return predictions, actuals, sources
 
     def start(self, df, delimiter: str = "\t"):
-        wandb.init(project="thesis-thomas")
+        wandb.init(project="thesis-test")
 
         config = wandb.config
-
-        # TODO Set the batch size during training
         config.TRAIN_BATCH_SIZE = 4
-
-        # TODO Set the batch size at validation time
         config.VALID_BATCH_SIZE = 4
-
-        # TODO Set your training epochs
-        config.TRAIN_EPOCHS = 5
-
-        # TODO Set the validation epochs
+        config.TRAIN_EPOCHS = NUMBER_OF_EPOCHS
         config.VAL_EPOCHS = 1
-
-        # TODO Set the
         config.LEARNING_RATE = 0.00005
-
-        # TODO Set your seed
         config.SEED = 42
-
-        # TODO What is the ma length of your input ? (Note that the input is consist of source text and context if training sentence doctor).
-        #  Refer to the documentation under Usage if you don't know what is meant by context.
         config.SOURCE_MAX_LEN = 256
-
-        # TODO What is the max length of your output ?
         config.TARGET_MAX_LEN = 256
-
         torch.manual_seed(config.SEED)
-
         np.random.seed(config.SEED)
-
         torch.backends.cudnn.deterministic = True
 
-        # TODO Change the T5 tokenizer. Leave it untouched if you don't have any other one you prefer
-        # tokenizer = T5Tokenizer.from_pretrained("yhavinga/t5-base-dutch")
         tokenizer = AutoTokenizer.from_pretrained("yhavinga/t5-base-dutch")
-
-        # df = pd.read_csv(path_to_training_data, encoding='utf-8', delimiter=delimiter)
 
         print_telegram(df.head())
 
-        # TODO Change the training size. Use a lower training size if you have less data
         train_size = 0.985
-
         train_dataset = df.sample(frac=train_size, random_state=config.SEED)
 
         val_dataset = df.drop(train_dataset.index).reset_index(drop=True)
-        # print_telegram()
         train_dataset = train_dataset.reset_index(drop=True)
 
         print_telegram("FULL Dataset: {}".format(df.shape))
-
         print_telegram("TRAIN Dataset: {}".format(train_dataset.shape))
-
         print_telegram("TEST Dataset: {}".format(val_dataset.shape))
 
-        # TODO Change the name of the attributes specifying the input text and the output text.
-        #  i used source for input and target for output as column names in my pandas dataframe
         training_set = T5Dataset(train_dataset, tokenizer, config.SOURCE_MAX_LEN, config.TARGET_MAX_LEN, "source",
                                  "target")
 
@@ -231,24 +187,18 @@ class Trainer:
         }
 
         training_loader = DataLoader(training_set, **train_params)
-
         val_loader = DataLoader(val_set, **val_params)
 
-        # TODO Load the model you want for pretraining. You don't have to use this one. Any T5 LM should work fine
-        # model = T5ForConditionalGeneration.from_pretrained("yhavinga/t5-base-dutch")
         model = AutoModelForSeq2SeqLM.from_pretrained("yhavinga/t5-base-dutch")
 
-
         device = get_device()
-
         model = model.to(device)
 
-        # TODO Change the optimiser and use whatever works for you. I like AMSGrad
         optimizer = torch.optim.Adam(params=model.parameters(), lr=config.LEARNING_RATE, amsgrad=True)
 
         wandb.watch(model, log="all")
 
-        print_telegram('Initiating Fine-Tuning for the model on our dataset')
+        print_telegram(f'Initiating Fine-Tuning for the model on our dataset, results can be found on {wandb.run.get_url()}')
 
         for epoch in range(config.TRAIN_EPOCHS):
             self.train(epoch, tokenizer, training_loader, model, device, optimizer)
@@ -257,28 +207,20 @@ class Trainer:
                 predictions, actuals, sources = self.validate(tokenizer, model, device, val_loader)
 
                 final_df = pd.DataFrame({'Source': sources, 'Prediction': predictions, 'Target': actuals})
-
-                # TODO Change the location of the predictions during evaluation
                 final_df.to_csv(f'{MODEL_SAVE_FOLDER}/predictions/predictions-epoch-{epoch}.csv')
 
                 print_telegram('Output Files generated for review')
 
-        # TODO Give a cool name to your awesome model
-        tokenizer.save_pretrained(MODEL_SAVE_FOLDER)
 
+        tokenizer.save_pretrained(MODEL_SAVE_FOLDER)
         model.save_pretrained(MODEL_SAVE_FOLDER)
 
 
 if __name__ == '__main__':
     trainer = Trainer()
 
-    # TODO Where is your data ? Enter the path
     df = DataCreator.get_dataframe()
-    # df = df.head(10)
-    print_telegram(df.columns)
-    df = df.drop(['Unnamed: 0', 'Unnamed: 0.1', 'year'], axis=1)
     df = df.sample(DATASET_SIZE)
-    print_telegram(df.columns)
     df['source'] = "post-correction: " + df['source']
 
     trainer.start(df)

@@ -21,5 +21,6 @@ def print_telegram(text):
 
     print(text)
 
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={TELEGRAM_CHAT_ID}&text={text}"
-    requests.get(url).json()
+    if TELEGRAM_BOOLEAN:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={TELEGRAM_CHAT_ID}&text={text}"
+        requests.get(url).json()
