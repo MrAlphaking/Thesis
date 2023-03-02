@@ -1,5 +1,5 @@
 import unittest
-from src.DataCleaner import clean_dataframe
+from data_loader.DataLoader import clean_dataframe
 import pandas as pd
 class DataCleanerTest(unittest.TestCase):
     def get_cleaning_dataset(self):

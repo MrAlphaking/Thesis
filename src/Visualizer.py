@@ -1,7 +1,5 @@
-import DataCleaner
 import DataCreator
 import matplotlib.pyplot as plt
-import pandas as pd
 import collections
 
 df = DataCreator.get_dataframe()

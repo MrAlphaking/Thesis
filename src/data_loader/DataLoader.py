@@ -8,6 +8,7 @@ from src.utils.Util import *
 from src.utils.Delpher import Delpher
 
 from src.utils.Settings import *
+from src.data_loader.Books2 import *
 
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 10000
@@ -21,6 +22,7 @@ delpher = Delpher()
 ##### Utils
 
 def remove_duplicates(data):
+    """"""
     seen = set()
     result = []
     for line in data:
@@ -28,23 +30,6 @@ def remove_duplicates(data):
             seen.add(line)
             result.append(line)
     return result
-
-# def clean_line(line, df):
-#     # Check for min and max length
-#     # print(line)
-#     if len(line) < MIN_CHARACTERS:
-#         return
-#     # Check for any digit in the string
-#     elif any(char.isdigit() for char in line):
-#         return
-#     line = line.replace("\n", "")
-#     line = line.replace("<FI>", "")
-#     # Remove trailing spaces
-#     line = line.strip()
-#     line = re.sub('[^A-Za-z0-9,.\s]+', '', line)
-#     # return_list.append(line)
-#     # df.loc[i] = ['name' + str(i)] + list(randint(10, size=2))
-#     return
 
 def clean_dataframe(df):
     df['target'] = df['target'].apply(lambda x: str(x))
@@ -128,12 +113,14 @@ def get_dbnl_books():
         return read_pandas(SAVE_PATH_DBNL_BOOKS)
 
     logging.info(f'Reading in Books 2')
-    path = f'../../data/Ground Truth/Books 2/TXT'
+    path = f'../../../data/Ground Truth/Books 2/TXT'
 
     df = pd.read_excel(f'{BASE_PATH}xlsx/Metadata_DBNL_OCR_v1.xlsx')
+    print(df)
+    print(df.columns)
     lines = []
     for file in tqdm(os.listdir(path), desc='dbnl_books', token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID):
-        Did = file.replace(".txt", "")
+        Did = file.replace(".txt", "").removesuffix('_01')
         year = df.loc[df['ti_id'] == Did].reset_index(drop=True).at[0, 'jaar']
         results = get_txt(f'Books 2/TXT/{file}')
         results = [item for sublist in results for item in sublist]
@@ -182,24 +169,28 @@ def get_17thcenturynewspaper():
     df = df.rename(columns={'gt text': 'target'})
     write_pandas(df, SAVE_PATH_17THCENTURYNEWSPAPER)
     return df
-
 def get_data():
+    books2 = Books2(SAVE_PATH_DBNL_BOOKS)
+    df = books2.get_data()
+    return df
+def get_data2():
     if READ_FROM_FILE_PRE_OCR:
         df = read_pandas(SAVE_PATH_PRE_OCR)
     else:
-        historical_newspaper = get_historical_newspaper()
-        # dbnl_books = get_dbnl_books()
+        # historical_newspaper = get_historical_newspaper()
+        df = get_dbnl_books()
+        df = df.head(100)
         # seventeenth_century_newspaper = get_17thcenturynewspaper()
 
-        impact_newspapers = get_impact('Newspapers')
-        impact_books = get_impact('Books')
-        impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
-        impact_radiobulletins = get_impact('Radio Bulletins')
-        statenvertaling = get_statenvertaling()
+        # impact_newspapers = get_impact('Newspapers')
+        # impact_books = get_impact('Books')
+        # impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
+        # impact_radiobulletins = get_impact('Radio Bulletins')
+        # statenvertaling = get_statenvertaling()
 
 
-        df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling, historical_newspaper]#, seventeenth_century_newspaper]
-        df = pd.concat(df)
+        # df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling, historical_newspaper]#, seventeenth_century_newspaper]
+        # df = pd.concat(df)
 
         if WRITE_FILE_PRE_OCR:
             write_pandas(df, SAVE_PATH_PRE_OCR)
