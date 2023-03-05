@@ -15,9 +15,9 @@ def add_ocr_text(index, row, sources):
 def get_dataframe():
 
     df = get_data()
-    image_list = ImageCreation.create_image_list(list(df['target']))
-    ocr_list = ocr.get_ocr_list2(image_list)
-    ImageCreation.remove_image_list(image_list)
+    # image_list = ImageCreation.create_image_list(list(df['target']))
+    # ocr_list = ocr.get_ocr_list2(image_list)
+    # ImageCreation.remove_image_list(image_list)
 
 get_dataframe()
 # def get_dataframe():
