@@ -21,25 +21,26 @@ def pretty_print(input, expected_output):
     print()
 
 if __name__ == "__main__":
-    input_text_1 = "post-correction: over de woningbow zei spreckster, dat de vrije bouver wiet am bod kont</s>"
-    expected_output_1 = "Over de woningbouw zei spreekster, dat de vrije bouwer niet aan bod komt"
-    pretty_print(input_text_1, expected_output_1)
 
-    input_text_2 = "post-correction: Wamt voor een boom, als hij afychouven wordt, is er vervachtyng, dat hij zich nog zal vermderen, en zijn scheut niet zal. ophouden</s>"
-    expected_output_2 = "Want voor een boom, als hij afgehouwen wordt, is er verwachting, dat hij zich nog zal veranderen, en zijn scheut niet zal ophouden"
-    pretty_print(input_text_2, expected_output_2)
-
-    input_text_3 = "post-correction: De schade is xuin aderhalé niljoen gulden</s>"
-    expected_output_3 = "De schade is ruim anderhalf miljoen gulden"
-    pretty_print(input_text_3, expected_output_3)
-
-    input_text_4 = "post-correction: 2ij xette het onmiddel1ijk op een lopen, korte tijd later yevolyd door de ona</s>"
-    expected_output_4 = "Zij zette het onmiddellijk op een lopen, korte tijd later gevolgd door de hond"
-    pretty_print(input_text_4, expected_output_4)
-
-    input_text_5 = "post-correction: Aileen de bestwurder van de luxe vayen werd Licht gevond</s>"
-    expected_output_5 = "Alleen de bestuurder van de luxe wagen werd licht gewond"
-    pretty_print(input_text_5, expected_output_5)
+    # input_text_1 = "post-correction: over de woningbow zei spreckster, dat de vrije bouver wiet am bod kont</s>"
+    # expected_output_1 = "Over de woningbouw zei spreekster, dat de vrije bouwer niet aan bod komt"
+    # pretty_print(input_text_1, expected_output_1)
+    #
+    # input_text_2 = "post-correction: Wamt voor een boom, als hij afychouven wordt, is er vervachtyng, dat hij zich nog zal vermderen, en zijn scheut niet zal. ophouden</s>"
+    # expected_output_2 = "Want voor een boom, als hij afgehouwen wordt, is er verwachting, dat hij zich nog zal veranderen, en zijn scheut niet zal ophouden"
+    # pretty_print(input_text_2, expected_output_2)
+    #
+    # input_text_3 = "post-correction: De schade is xuin aderhalé niljoen gulden</s>"
+    # expected_output_3 = "De schade is ruim anderhalf miljoen gulden"
+    # pretty_print(input_text_3, expected_output_3)
+    #
+    # input_text_4 = "post-correction: 2ij xette het onmiddel1ijk op een lopen, korte tijd later yevolyd door de ona</s>"
+    # expected_output_4 = "Zij zette het onmiddellijk op een lopen, korte tijd later gevolgd door de hond"
+    # pretty_print(input_text_4, expected_output_4)
+    #
+    # input_text_5 = "post-correction: Aileen de bestwurder van de luxe vayen werd Licht gevond</s>"
+    # expected_output_5 = "Alleen de bestuurder van de luxe wagen werd licht gewond"
+    # pretty_print(input_text_5, expected_output_5)
 
 
 

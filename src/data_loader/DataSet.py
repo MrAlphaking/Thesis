@@ -11,27 +11,30 @@ class DataSet(ABC):
         self.base_path = f'../../data/Ground Truth/'
         self.save_path = save_path
     @abstractmethod
-    def add_item(self, index, file, df, lines):
+    def get_item(self, item, df):
         pass
 
     @abstractmethod
     def get_data(self):
         pass
 
-    def thread_function(self, index, item, df):
-        self.add_item()
+    def thread_function(self, index, item, df, return_list):
+        return_list += self.get_item(item, df)
+
+
     def multi_thread(self, item_list, df, desc=""):
         return_list = []
         threads = list()
         for index, item in enumerate(progress_bar(item_list, desc=desc)):
-            while psutil.cpu_percent():
+            while psutil.cpu_percent() > 99:
                 time.sleep(0.01)
-            x = threading.Thread(target=self.add_item, args=(index, item, df, return_list, ))
+            x = threading.Thread(target=self.thread_function, args=(index, item, df, return_list, ))
             x.start()
             threads.append(x)
 
         for thread in progress_bar(threads, desc=f"Joining threads {desc}:"):
             thread.join()
+
         return return_list
 
 
