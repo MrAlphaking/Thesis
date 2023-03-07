@@ -19,3 +19,6 @@
     # Retrieve OCR data from Delpher, and run it through the model
     # Find existing solutions, and compare results
  
+ https://sites.google.com/view/icdar2019-postcorrectionocr/evaluation
+ https://zenodo.org/record/3515403#.Y_8xfNLMJki
+ https://gitlab.univ-lr.fr/crigau02/icdar2019-post-ocr-text-correction-competition/-/tree/master/
