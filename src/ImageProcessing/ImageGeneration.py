@@ -1,4 +1,5 @@
 import os
+import time
 
 from tesserocr import PyTessBaseAPI, RIL
 from PIL import Image
@@ -107,49 +108,55 @@ def remove_text2(image_path):
 
 import pandas as pd
 from sewar.full_ref import mse, rmse, psnr, uqi, ssim, ergas, scc, rase, sam, msssim, vifp
-def get_similar_image(image_path):
+import threading
+
+def thread_function(data, image_path, directory_path, dim, org):
+    blur = cv2.imread(f'{directory_path}{image_path}')
+    blur = cv2.resize(blur, dim)
+    data.append(
+        [image_path, mse(blur, org), rmse(blur, org), psnr(blur, org), uqi(blur, org), msssim(blur, org), ergas(blur, org),
+         scc(blur, org), rase(blur, org), sam(blur, org), vifp(blur, org)])
+
+def get_similar_image(reference_image):
     dim = (400, 400)
 
-    org = cv2.imread(image_path)
-    org = cv2.resize(org, dim)
+    ref = cv2.imread(reference_image)
+    ref = cv2.resize(ref, dim)
 
     data = []
     directory_path = '../../../data/Ground Truth/Newspapers/ddd/'
-    for image in progress_bar(os.listdir(directory_path)[:4]):
-        if image == image_path:
+    threads = list()
+    for image in progress_bar(os.listdir(directory_path)[:10]):
+        if image == reference_image:
             continue
-        # print(image)
-        blur = cv2.imread(f'{directory_path}{image}')
-        blur = cv2.resize(blur, dim)
-        data.append([image, mse(blur, org), rmse(blur, org), psnr(blur, org), uqi(blur, org), msssim(blur, org), ergas(blur, org), scc(blur, org), rase(blur, org), sam(blur, org), vifp(blur, org)])
+        # while threading.active_count() > 40:
+        #     time.sleep(0.01)
+        # while psutil.cpu_percent() > 99:
+        #     # time.sleep(0.01)
+        #     for thread in progress_bar(threads, desc=f"Joining threads:"):
+        #         thread.join()
+        x = threading.Thread(target=thread_function, args=(data, image, directory_path, dim, ref,))
+        x.start()
+        threads.append(x)
 
-        # print("MSE: ", )
-        # print("RMSE: ", )
-        # print("PSNR: ", )
-        # print("SSIM: ", )
-        # print("UQI: ", )
-        # print("MSSSIM: ", )
-        # print("ERGAS: ", )
-        # print("SCC: ", )
-        # print("RASE: ", )
-        # print("SAM: ", )
-        # print("VIF: ", )
+    for thread in progress_bar(threads, desc='Joining threads:'):
+        thread.join()
 
     columns = ['MSE', 'RMSE', 'PSNR', 'UQI', 'MSSSIM', 'ERGAS', 'SCC', 'RASE', 'SAM', 'VIF']
     df = pd.DataFrame(data,
                       columns=['FILE', 'MSE', 'RMSE', 'PSNR', 'UQI', 'MSSSIM', 'ERGAS', 'SCC', 'RASE', 'SAM', 'VIF'])
-    print(df.head(2))
     # print(df['SSIM'])
     for column in columns:
-        print(column)
         df[column] = df[column] / df[column].abs().max()
 
-    diff_df = df2 - df1.values
-    # or diff_df = df2 - df1.iloc[0, :]
-    norm_df = diff.apply(np.linalg.norm, axis=1)
-    df2.loc[norm_df.idxmin()]
-    print(df.head(2))
+    return df
+
+
 
 # remove_text2('../../../../../Pictures/TechSmith-Blog-ExtractText.png')
 # remove_text('C:\Users\\thoma\Pictures\TechSmith-Blog-ExtractText.png')
-get_similar_image('../../../data/Ground Truth/Newspapers/ddd/00530982.tif')
+reference_image = '../../images/templates/white.jpg'
+
+df = get_similar_image(reference_image)
+
+# get_similar_image('../../../data/Ground Truth/Newspapers/ddd/00530982.tif')
