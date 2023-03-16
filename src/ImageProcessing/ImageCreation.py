@@ -23,6 +23,39 @@ class ImageCreation:
         self.image_path = IMAGE_PATH_BLANK
         self.output_path = IMAGE_WRITE_BLANK
 
+    def get_text_dimensions(self, text_string, font):
+        # https://stackoverflow.com/a/46220683/9263761
+        ascent, descent = font.getmetrics()
+
+        text_width = font.getmask(text_string).getbbox()[2]
+        text_height = font.getmask(text_string).getbbox()[3] + descent
+
+        return (text_width, text_height)
+
+    def get_concat_h(self, im1, im2):
+        """
+        Concatenates 2 images horizontally, and returns the concatenated result
+        :param im1: The first image
+        :param im2: The second image 
+        :return: The concatenated result
+        """
+        dst = Image.new('RGB', (im1.width + im2.width, im1.height))
+        dst.paste(im1, (0, 0))
+        dst.paste(im2, (im1.width, 0))
+        return dst
+
+    def get_concat_v(self, im1, im2):
+        """
+        Concatenates 2 images horizontally, and returns the concatenated result
+        :param im1: The first image
+        :param im2: The second image 
+        :return: The concatenated result
+        """
+        dst = Image.new('RGB', (im1.width, im1.height + im2.height))
+        dst.paste(im1, (0, 0))
+        dst.paste(im2, (0, im1.height))
+        return dst
+
     def create_image(self, index, ocr_text, year, image_list):
         """
         This function takes as input an OCR text and turns it into an image.
@@ -36,39 +69,19 @@ class ImageCreation:
         files = os.listdir(path)
         # print(f'{files}, [{len(files)}]')
         chosen_file = files[random.randint(0, len(files)-1)]
-        org_img = cv2.imread(f'{path}/{chosen_file}')
+        org_img = Image.open(f'{path}/{chosen_file}')
         img = org_img
 
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        fontScale = 1.0
-        thickness = 2
-        size, _ = cv2.getTextSize(ocr_text, font, fontScale, thickness)
-        text_width, text_height = size
+        FONT_FAMILY = "../fonts/BreitkopfFraktur.ttf"
+        FONT_SIZE = 25
+        font = ImageFont.truetype(FONT_FAMILY, FONT_SIZE)
+        text_width, text_height = self.get_text_dimensions(ocr_text, font)
 
-
-        while img.shape[1] < text_width + 80:
-            img = np.concatenate((img, org_img), axis=1)
-
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(img)
-
-        # ft = cv2.freetype.createFreeType2()
-        # ft.loadFontData(fontFileName='../../fonts/BreitkopfFraktur.tff',
-        #                 id=0)
-        # ft.putText(img=img,
-        #            text=ocr_text,
-        #            org=(20,20),
-        #            fontScale=fontScale,
-        #            color=(255, 255, 255),
-        #            thickness=thickness,
-        #            line_type=cv2.LINE_AA)
-
-
-        # img = cv2.putText(img, ocr_text, (40,30), font,
-        #                     fontScale, (0,0,0), thickness, cv2.LINE_AA)
+        while img.size[0] < text_width + 80:
+            img = self.get_concat_h(img, org_img)
 
         I1 = ImageDraw.Draw(img)
-        I1.text((40,30), ocr_text, fontScale=fontScale, thickness= thickness, fill=(255,255,255))
+        I1.text((40,30), ocr_text, font=font, fill=(0,0,0))
 
         path = self.output_path + str(index) + '.jpg'
         img.save(path)
