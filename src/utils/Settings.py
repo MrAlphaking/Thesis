@@ -15,8 +15,8 @@ SAVE_PATH_IMPACT = BASE_PATH + "dataframes/IMPACT_"
 
 # DataCreator.py
 MAX_THREADING_COUNT = 50
-READ_FROM_FILE_POST_OCR = True
-WRITE_FILE_POST_OCR = False
+READ_FROM_FILE_POST_OCR = False
+WRITE_FILE_POST_OCR = True
 SAVE_PATH_POST_OCR = BASE_PATH + "dataframes/POST_OCR_temp_until_270000"
 
 # ImageCreation.py
@@ -36,3 +36,9 @@ TENSOR_DTYPE = torch.long
 
 DATASET_SIZE = 10
 MODEL_SAVE_FOLDER = f'models/t5-base-dutch-post-correction-{DATASET_SIZE}'
+
+# Delpher
+
+delpher_api_key = 'dd69d73d-91c0-43a5-8516-2ccf458a158a'
+SAVE_PATH_DOWNLOAD_IMAGE = '../images/download'
+SAVE_PATH_BACKGROUND_IMAGE = '../images/background'

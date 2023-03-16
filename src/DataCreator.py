@@ -5,21 +5,22 @@ from src.ImageProcessing.ImageCreation import *
 ImageCreation = ImageCreation()
 ocr = OCR()
 
-def add_ocr_text(index, row, sources):
-    target = row['target']
-    output_path = ImageCreation.getImage(target, index=index)
-    source = (index, ocr.get_ocr(output_path).strip("\n"))
-    sources.append(source)
-    # os.remove(output_path)
-
 def get_dataframe():
-
+    if READ_FROM_FILE_POST_OCR:
+        df = read_pandas(SAVE_PATH_POST_OCR)
+        return df
     df = get_data()
-    # image_list = ImageCreation.create_image_list(list(df['target']))
-    # ocr_list = ocr.get_ocr_list2(image_list)
-    # ImageCreation.remove_image_list(image_list)
+    print(list(df['target']))
+    image_list = ImageCreation.create_image_list(df)
+    ocr_list = ocr.get_ocr_list(image_list)
+    df['source'] = ocr_list
+    ImageCreation.remove_image_list(image_list)
 
-get_dataframe()
+    if WRITE_FILE_POST_OCR:
+        write_pandas(df, SAVE_PATH_POST_OCR)
+    return df
+
+
 # def get_dataframe():
 #     if READ_FROM_FILE_POST_OCR:
 #         df = read_pandas(SAVE_PATH_POST_OCR)

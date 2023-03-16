@@ -21,10 +21,8 @@ MAX_WORDS = 50
 # BASE_PATH = '../../data/Ground Truth/'
 # SAVE_FILE_PATH = BASE_PATH + "dataframes/target_year"
 
-delpher = Delpher()
+delpher = Delpher(SAVE_PATH_DOWNLOAD_IMAGE)
 ##### Utils
-
-
 
 def clean_dataframe(df):
     df['target'] = df['target'].apply(lambda x: str(x))
@@ -54,6 +52,7 @@ def get_data():
 
     data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, dbnl, historical_newspaper, seventeenth_century_newspaper]
     data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, dbnl]
+    data_list = [impact_newspapers]
     dataframes = []
 
     for item in data_list:
@@ -73,34 +72,34 @@ def get_data():
     print_telegram(f'Amount of data after cleaning: {len(df.index)}')
     return df
 
-
-def get_data2():
-    if READ_FROM_FILE_PRE_OCR:
-        df = read_pandas(SAVE_PATH_PRE_OCR)
-    else:
-        # historical_newspaper = get_historical_newspaper()
-        # df = get_dbnl_books()
-        # df = df.head(100)
-        # seventeenth_century_newspaper = get_17thcenturynewspaper()
-
-        # impact_newspapers = get_impact('Newspapers')
-        # impact_books = get_impact('Books')
-        # impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
-        # impact_radiobulletins = get_impact('Radio Bulletins')
-        # statenvertaling = get_statenvertaling()
-
-
-        # df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling, historical_newspaper]#, seventeenth_century_newspaper]
-        # df = pd.concat(df)
-
-        if WRITE_FILE_PRE_OCR:
-            write_pandas(df, SAVE_PATH_PRE_OCR)
-
-    print_telegram(f'Amount of data before cleaning: {len(df.index)}')
-    df["target"] = df["target"].str.split(".")
-    df = df.explode('target').reset_index(drop=True)
-    print_telegram(f'Amount of data after exploding: {len(df.index)}')
-    df = clean_dataframe(df)
-    print_telegram(f'Amount of data after cleaning: {len(df.index)}')
-    # print(df)
-    return df
+#
+# def get_data2():
+#     if READ_FROM_FILE_PRE_OCR:
+#         df = read_pandas(SAVE_PATH_PRE_OCR)
+#     else:
+#         # historical_newspaper = get_historical_newspaper()
+#         # df = get_dbnl_books()
+#         # df = df.head(100)
+#         # seventeenth_century_newspaper = get_17thcenturynewspaper()
+#
+#         # impact_newspapers = get_impact('Newspapers')
+#         # impact_books = get_impact('Books')
+#         # impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
+#         # impact_radiobulletins = get_impact('Radio Bulletins')
+#         # statenvertaling = get_statenvertaling()
+#
+#
+#         # df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling, historical_newspaper]#, seventeenth_century_newspaper]
+#         # df = pd.concat(df)
+#
+#         if WRITE_FILE_PRE_OCR:
+#             write_pandas(df, SAVE_PATH_PRE_OCR)
+#
+#     print_telegram(f'Amount of data before cleaning: {len(df.index)}')
+#     df["target"] = df["target"].str.split(".")
+#     df = df.explode('target').reset_index(drop=True)
+#     print_telegram(f'Amount of data after exploding: {len(df.index)}')
+#     df = clean_dataframe(df)
+#     print_telegram(f'Amount of data after cleaning: {len(df.index)}')
+#     # print(df)
+#     return df

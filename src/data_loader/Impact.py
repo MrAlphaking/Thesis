@@ -23,7 +23,7 @@ class Impact(DataSet):
         print_telegram(f'Reading in {self.type}')
         df = pd.read_excel(f'{BASE_PATH}xlsx/impact_{self.type.replace(" ", "_").lower()}.xlsx')
 
-        lines = self.multi_thread(os.listdir(self.path), df, desc=f'Impact {self.path}')
+        lines = self.multi_thread(os.listdir(self.path)[:2], df, desc=f'Impact {self.path}')
 
         return_frame = pd.DataFrame(lines, columns=["target", "year"])
         # print(return_frame)
