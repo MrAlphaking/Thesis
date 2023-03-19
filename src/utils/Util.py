@@ -4,9 +4,7 @@ from src.utils.Settings import *
 import pandas as pd
 import inspect
 from tqdm.contrib.telegram import tqdm
-import psutil
 import xml.etree.ElementTree as ET
-import time
 
 
 def get_xml_element(filename, element="Unicode"):
@@ -25,11 +23,11 @@ def get_xml_element(filename, element="Unicode"):
     # print(lines)
     return lines
 def write_pandas(df, path):
-    logging.info(f'Writing to file: {path}')
-    df.to_csv(path)
+    print_telegram(f'Writing to file: {path}')
+    df.to_csv(path, index=False)
 
 def read_pandas(path):
-    logging.info(f'Reading from file: {path}')
+    print_telegram(f'Reading from file: {path}')
     return pd.read_csv(path)
 
 def progress_bar(item_list, desc=""):

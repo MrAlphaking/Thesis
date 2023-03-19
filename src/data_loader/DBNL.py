@@ -22,6 +22,9 @@ class DBNL(DataSet):
             return [(results, '0000')]
 
     def get_data(self):
+        if os.path.exists(self.save_path) and READ_FROM_FILE_INTERMEDIATES:
+            return read_pandas(self.save_path)
+
         print_telegram(f'Reading in Books 2')
         path = f'{self.base_path}Books 2/TXT'
         df = pd.read_excel(f'{BASE_PATH}xlsx/Metadata_DBNL_OCR_v1.xlsx')
@@ -31,17 +34,3 @@ class DBNL(DataSet):
 
         write_pandas(return_frame, self.save_path)
         return return_frame
-    # def get_data(self):
-    #     print_telegram(f'Reading in Books 2')
-    #     path = f'{self.base_path}Books 2/TXT'
-    #     df = pd.read_excel(f'{BASE_PATH}xlsx/Metadata_DBNL_OCR_v1.xlsx')
-    #     lines = []
-    #     for index, file in enumerate(progress_bar(os.listdir(path), desc='dbnl_books')):
-    #         self.add_item(index, file, df, lines)
-    #
-    #     return_frame = pd.DataFrame(lines, columns=["target", "year"])
-    #
-    #     print(return_frame.head(3))
-    #     print(return_frame.columns)
-    #     write_pandas(return_frame, self.save_path)
-    #     return return_frame

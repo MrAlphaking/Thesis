@@ -10,8 +10,10 @@ class SeventeenthCentury(DataSetDelpher):
     def get_data(self):
         if os.path.exists(self.save_path) and READ_FROM_FILE_INTERMEDIATES:
             return read_pandas(SAVE_PATH_17THCENTURYNEWSPAPER)
+
         logging.info(f'Reading in 17th century newspapers')
         df = pd.read_csv(f'{BASE_PATH}17thcenturynewspapers.csv', compression='gzip')
+        # print(df.columns)
         years = []
         for item in tqdm(list(df["identifier"]), desc='17thcenturynewspaper', token=TELEGRAM_TOKEN,
                          chat_id=TELEGRAM_CHAT_ID):
@@ -20,7 +22,7 @@ class SeventeenthCentury(DataSetDelpher):
             years.append(year)
 
         df['year'] = years
-        df = df.drop(['Unnamed: 0', 'identifier', 'ocr_text'], axis=1)
+        df = df.drop(['Unnamed: 0', 'identifier', 'ocr text'], axis=1)
         df = df.rename(columns={'gt text': 'target'})
         write_pandas(df, SAVE_PATH_17THCENTURYNEWSPAPER)
         return df

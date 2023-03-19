@@ -16,10 +16,10 @@ class Delpher:
 
     :param save_location: A string representing the folder path where the images will be saved.
     """
-    def __init__(self, save_location):
+    def __init__(self):
         print("Delpher class created")
         self.year_dict = {}
-        self.save_location=save_location
+        self.save_location=SAVE_PATH_DOWNLOAD_IMAGE
 
     def query(self, year, maximum_records):
         """

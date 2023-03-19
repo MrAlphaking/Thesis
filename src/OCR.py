@@ -6,6 +6,7 @@ import tesserocr
 from src.utils.Util import *
 from tqdm.contrib.telegram import tqdm
 import psutil
+import time
 class OCR:
     def __init__(self):
         """

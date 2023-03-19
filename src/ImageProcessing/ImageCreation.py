@@ -105,7 +105,7 @@ class ImageCreation:
         images = []
         threads = list()
 
-        for index, row in tqdm(df.iterrows(), token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc="Creating images:"):
+        for index, row in tqdm(df.iterrows(), token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc="Creating images: "):
             # images.append((index, self.create_image(text, index=index)))
             while psutil.cpu_percent() >= 100:
                 # print("Sleep")
