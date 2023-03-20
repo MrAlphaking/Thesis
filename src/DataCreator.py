@@ -11,9 +11,9 @@ def get_dataframe():
         return df
 
     df = get_data()
+    print(df.head())
 
-
-    print(list(df['target']))
+    # print(list(df['target']))
     image_list = ImageCreation.create_image_list(df)
     ocr_list = ocr.get_ocr_list(image_list)
     df['source'] = ocr_list

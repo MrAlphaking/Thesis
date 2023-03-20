@@ -72,7 +72,7 @@ class ImageCreation:
         org_img = Image.open(f'{path}/{chosen_file}')
         img = org_img
 
-        FONT_FAMILY = "../fonts/BreitkopfFraktur.ttf"
+        FONT_FAMILY = "arial.ttf"
         FONT_SIZE = 25
         font = ImageFont.truetype(FONT_FAMILY, FONT_SIZE)
         text_width, text_height = self.get_text_dimensions(ocr_text, font)
@@ -115,7 +115,7 @@ class ImageCreation:
             threads.append(x)
             x.start()
 
-        for thread in tqdm(threads, token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc="Joining threads"):
+        for thread in tqdm(threads, token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc="Joining threads of creating images: "):
             thread.join()
         images.sort(key=lambda x: x[0])
         return list(zip(*images))[1]

@@ -34,14 +34,16 @@ def clean_dataframe(df):
     df = df[df['target'].apply(lambda x: x.count(' ') > MIN_WORDS)]
     df = df[df['target'].apply(lambda x: x.count(' ') < MAX_WORDS)]
     df = df[df['target'].apply(lambda x: not(any(char.isdigit() for char in x)))]
+    df = df[df['target'].apply(lambda x: x != 'NaN')]
     df = df[df['year'].apply(lambda x: x != '0000')]
     df = df.drop_duplicates(subset=['target'])
     df = df.reset_index(drop=True)
     return df
 
 def get_data():
-    if os.path.exists(SAVE_PATH_PRE_OCR_UNCLEANED) and READ_FROM_FILE_PRE_OCR:
-        df = read_pandas(SAVE_PATH_PRE_OCR_UNCLEANED)
+    if os.path.exists(SAVE_PATH_PRE_OCR_CLEANED) and READ_FROM_FILE_PRE_OCR:
+        df = read_pandas(SAVE_PATH_PRE_OCR_CLEANED)
+        return df
     impact_newspapers = Impact(SAVE_PATH_IMPACT, 'Newspapers')
     impact_books = Impact(SAVE_PATH_IMPACT, 'Books')
     impact_parliamentary_proceedings = Impact(SAVE_PATH_IMPACT, 'Parliamentary Proceedings')
@@ -81,35 +83,3 @@ def get_data():
     if WRITE_FILE_PRE_OCR_CLEANED:
         write_pandas(df, SAVE_PATH_PRE_OCR_CLEANED)
     return df
-
-#
-# def get_data2():
-#     if READ_FROM_FILE_PRE_OCR:
-#         df = read_pandas(SAVE_PATH_PRE_OCR)
-#     else:
-#         # historical_newspaper = get_historical_newspaper()
-#         # df = get_dbnl_books()
-#         # df = df.head(100)
-#         # seventeenth_century_newspaper = get_17thcenturynewspaper()
-#
-#         # impact_newspapers = get_impact('Newspapers')
-#         # impact_books = get_impact('Books')
-#         # impact_parliamentary_proceedings = get_impact('Parliamentary Proceedings')
-#         # impact_radiobulletins = get_impact('Radio Bulletins')
-#         # statenvertaling = get_statenvertaling()
-#
-#
-#         # df = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, statenvertaling, historical_newspaper]#, seventeenth_century_newspaper]
-#         # df = pd.concat(df)
-#
-#         if WRITE_FILE_PRE_OCR:
-#             write_pandas(df, SAVE_PATH_PRE_OCR)
-#
-#     print_telegram(f'Amount of data before cleaning: {len(df.index)}')
-#     df["target"] = df["target"].str.split(".")
-#     df = df.explode('target').reset_index(drop=True)
-#     print_telegram(f'Amount of data after exploding: {len(df.index)}')
-#     df = clean_dataframe(df)
-#     print_telegram(f'Amount of data after cleaning: {len(df.index)}')
-#     # print(df)
-#     return df
