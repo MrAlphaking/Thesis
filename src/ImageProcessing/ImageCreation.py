@@ -5,23 +5,25 @@ import random
 
 logging.getLogger('PIL').setLevel(logging.WARNING)
 from PIL import Image
-from PIL import ImageDraw
+from PIL import ImageDraw, ImageEnhance, ImageFilter
 from tqdm.contrib.telegram import tqdm
-from src.utils.Settings import IMAGE_PATH_BLANK, IMAGE_WRITE_BLANK
 from src.utils.Util import *
 from PIL import ImageFont
 import textwrap
 import threading
 import time
 import psutil
+
+
 import cv2
 import numpy as np
 
 
 class ImageCreation:
     def __init__(self):
-        self.image_path = IMAGE_PATH_BLANK
-        self.output_path = IMAGE_WRITE_BLANK
+        print_telegram("ImageCreation class")
+        # self.image_path = IMAGE_PATH_BLANK
+        # self.output_path = IMAGE_WRITE_BLANK
 
     def get_text_dimensions(self, text_string, font):
         # https://stackoverflow.com/a/46220683/9263761
@@ -56,25 +58,51 @@ class ImageCreation:
         dst.paste(im2, (0, im1.height))
         return dst
 
-    def create_image(self, index, ocr_text, year, image_list):
+    # def create_image(self, index, ocr_text, year, image_list):
+
+    def get_time_period_path(self, year):
+        """
+        Since the folder structure is begin_year-end_year for the background images, it should be identified which time period to choose.
+        :param year: The year for which to take the correct path.
+        :return: The correct path
+        """
+        for path in os.listdir(SAVE_PATH_BACKGROUND_IMAGE):
+            years = path.split("-")
+            if int(years[0]) <= year and int(years[1]) > year:
+                return f'{SAVE_PATH_BACKGROUND_IMAGE}/{path}'
+        random_path = random.choice(os.listdir(SAVE_PATH_BACKGROUND_IMAGE))
+        print_telegram(f"No correct path could be found for year: {year}, thus returning {random_path} instead")
+        return f'{SAVE_PATH_BACKGROUND_IMAGE}/{random_path}'
+
+    def get_correct_font(self, year):
+        """
+        The goal of this function is to return the correct font type, for the corresponding year.
+        :param year:
+        :return:
+        """
+        # FONT_FAMILY = "../fonts/BreitkopfFraktur.ttf"
+        FONT_FAMILY = "arial.ttf"
+        FONT_SIZE = 25
+        font = ImageFont.truetype(FONT_FAMILY, FONT_SIZE)
+        return font
+
+    def create_image(self, index, ocr_text, year):
         """
         This function takes as input an OCR text and turns it into an image.
         :param index: This is used so the entire list can be kept in the right order when using threads.
         :param ocr_text: The text to be turned into an image.
         :param image_list: The list to add the image to. This is a pass by reference list, used by multiple threads at once.
         """
-        if year == "0000":
-            year = random.randint(1637,1900)
-        path = f'{SAVE_PATH_BACKGROUND_IMAGE}/{year}'
+        # if year == "0000":
+        #     year = random.randint(1637,1900)
+        path = self.get_time_period_path(year)
         files = os.listdir(path)
         # print(f'{files}, [{len(files)}]')
         chosen_file = files[random.randint(0, len(files)-1)]
         org_img = Image.open(f'{path}/{chosen_file}')
         img = org_img
 
-        FONT_FAMILY = "arial.ttf"
-        FONT_SIZE = 25
-        font = ImageFont.truetype(FONT_FAMILY, FONT_SIZE)
+        font = self.get_correct_font(year)
         text_width, text_height = self.get_text_dimensions(ocr_text, font)
 
         while img.size[0] < text_width + 80:
@@ -82,10 +110,19 @@ class ImageCreation:
 
         I1 = ImageDraw.Draw(img)
         I1.text((40,30), ocr_text, font=font, fill=(0,0,0))
-
-        path = self.output_path + str(index) + '.jpg'
+        path = f'../images/{index}.jpg'
         img.save(path)
-        image_list.append((index, path))
+
+        for i in range(round(img.size[0] * img.size[1] / 150 )):
+            img.putpixel(
+                (random.randint(0, img.size[0] - 1), random.randint(0, img.size[1] - 1)),
+                (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            )
+        path = f'../images/noise-{index}.jpg'
+        img.save(path)
+        return img
+
+        # image_list.append((index, path))
 
     def remove_image_list(self, image_list):
         """
@@ -119,3 +156,5 @@ class ImageCreation:
             thread.join()
         images.sort(key=lambda x: x[0])
         return list(zip(*images))[1]
+
+

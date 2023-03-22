@@ -23,10 +23,6 @@ READ_FROM_FILE_POST_OCR = False
 WRITE_FILE_POST_OCR = True
 SAVE_PATH_POST_OCR = BASE_PATH + "dataframes/POST_OCR_temp_until_270000"
 
-# ImageCreation.py
-IMAGE_PATH_BLANK = "../images/templates/white.jpg"
-IMAGE_WRITE_BLANK = "../images/run/white-edited-"
-
 # Telegram
 
 TELEGRAM_BOOLEAN = False

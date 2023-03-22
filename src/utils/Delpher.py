@@ -21,7 +21,7 @@ class Delpher:
         self.year_dict = {}
         self.save_location=SAVE_PATH_DOWNLOAD_IMAGE
 
-    def query(self, year, maximum_records):
+    def query(self, start_year, end_year, maximum_records):
         """
         Query the Delpher digital library for articles published within a given year.
 
@@ -29,7 +29,7 @@ class Delpher:
         :param maximum_records: An integer representing the maximum number of articles to retrieve.
         :return: A dictionary containing the article metadata.
         """
-        url = f"http://jsru.kb.nl/sru/sru?version=1.2&maximumRecords={maximum_records}&operation=searchRetrieve&startRecord=1&recordSchema=ddd&x-collection=DDD_artikel&x-facets=&query=%28date%20within%20%2201-01-{year}%2031-12-{year}%22%29&x-fields=zones"
+        url = f"http://jsru.kb.nl/sru/sru?version=1.2&maximumRecords={maximum_records}&operation=searchRetrieve&startRecord=1&recordSchema=ddd&x-collection=DDD_artikel&x-facets=&query=%28date%20within%20%2201-01-{start_year}%2031-12-{end_year}%22%29&x-fields=zones"
         print(url)
         with urlopen(url) as f:
             tree = ET.parse(f)
@@ -49,11 +49,11 @@ class Delpher:
 
     def download_images_period(self, start_year, end_year, maximum_records=10, step_size=1):
         for year in progress_bar(range(start_year, end_year, step_size)):
-            self.download_images(year, maximum_records=maximum_records)
+            self.download_images(year, year + step_size, maximum_records=maximum_records)
 
-    def download_images(self, year, maximum_records):
-        result_dict = self.query(year,maximum_records)
-        path = f'{self.save_location}/{year}/'
+    def download_images(self, start_year, end_year, maximum_records):
+        result_dict = self.query(start_year, end_year, maximum_records)
+        path = f'{self.save_location}/{start_year}-{end_year}/'
         if not os.path.exists(path):
             os.makedirs(path)
         # print(result_dict)

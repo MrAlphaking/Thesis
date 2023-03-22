@@ -35,6 +35,9 @@ class OCR:
     #         time.sleep(1)
     #         return self.get_ocr(image_path)
 
+    def get_text(self, image):
+        return tesserocr.image_to_text(image).replace('\n', "")
+
     def add_ocr(self, index, image_path, ocr):
         """
         This function is used by the get_ocr_list function to add the ocr data of a certain image_path, by using the tesserocr api.
@@ -98,6 +101,6 @@ class OCR:
         ocr.sort(key=lambda x: x[0])
         return list(zip(*ocr))[1]
 
-if __name__ == "__main__":
-    ocr = OCR()
-    ocr.get_ocr_list2(['../images/run/white-edited-2.jpg'])
+# if __name__ == "__main__":
+#     ocr = OCR()
+#     ocr.get_ocr_list2(['../images/run/white-edited-2.jpg'])
