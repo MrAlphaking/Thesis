@@ -52,6 +52,7 @@ def get_dataframe():
         return df
 
     df = get_data()
+    # df = df.iloc[121000:122000]
     print(df["year"].unique())
     print(df.head())
 

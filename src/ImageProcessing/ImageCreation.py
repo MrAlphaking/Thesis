@@ -27,12 +27,20 @@ class ImageCreation:
 
     def get_text_dimensions(self, text_string, font):
         # https://stackoverflow.com/a/46220683/9263761
-        ascent, descent = font.getmetrics()
+        try:
+            ascent, descent = font.getmetrics()
 
-        text_width = font.getmask(text_string).getbbox()[2]
-        text_height = font.getmask(text_string).getbbox()[3] + descent
+            text_width = font.getmask(text_string).getbbox()[2]
+            text_height = font.getmask(text_string).getbbox()[3] + descent
+            return (text_width, text_height)
 
-        return (text_width, text_height)
+        except:
+            print(font)
+            print(f'String: {text_string}')
+            regex_string = '[^A-Za-z0-9,.;\s]+'
+            print(len(text_string.strip()))
+            print(len(text_string))
+
 
     def get_concat_h(self, im1, im2):
         """
