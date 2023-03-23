@@ -26,6 +26,7 @@ delpher = Delpher()
 ##### Utils
 
 def clean_dataframe(df):
+    df['year'] = df['year'].apply(lambda x: str(x))
     df['target'] = df['target'].apply(lambda x: str(x))
     df['target'] = df['target'].replace(r'\s+', ' ', regex=True)
     df['target'] = df['target'].apply(lambda x: x.strip())
