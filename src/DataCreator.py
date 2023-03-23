@@ -20,7 +20,7 @@ def save_df(index, source_text_list, threads, df):
 def create_ocr_from_image(index, source_text_list, target_text, year):
     image = ImageCreation.create_image(index, target_text, year)
     ocr_text = ocr.get_text(image)
-    # print(f'Source: {ocr_text} ---- Target: {target_text}')
+    # print(f'Source: {ocr_text}\nTarget: {target_text}')
     source_text_list.append((index, ocr_text))
 def create_ocr_dataframe(df):
     source_text_list = []
@@ -66,5 +66,8 @@ def get_dataframe():
         write_pandas(df, SAVE_PATH_POST_OCR)
     return df
 
-if __name__ == "__main__":
-    get_data()
+# if __name__ == "__main__":
+#     get_data()
+#     temp_list = []
+#     create_ocr_from_image(0, temp_list, "Haar onderwerp is intusschen voor ons vaderland zoo allergewigtigst, dat men bijna geregtigd kan zijn tot de vraag, of niet veeleer de orde van behandeling behoorde te worden omgekeerd", 1930)
+#     print(temp_list)

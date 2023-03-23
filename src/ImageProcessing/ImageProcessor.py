@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-from src.utils.Util import progress_bar
+from src.utils.Util import *
 
 class ImageProcessor:
     def __init__(self, save_location):
@@ -9,31 +9,27 @@ class ImageProcessor:
         self.PAPER_MAX = np.array([150, 255, 255], np.uint8)
         print("Image processor class created")
         self.save_location = save_location
-    def clean_rectangles(self, background_location):
+    def clean_rectangles(self, background_location, num_images=5):
+        """
+        This function iterates over the rectangles created, and finds a set number of images to be used as background, based on how much black is in the image.
+        :param background_location: The location of the images containing the downloaded background images.
+        :param num_images: The amount of images to be saved for background usage.
+        """
         images = []
         for period in os.listdir(background_location):
             period = f'{background_location}/{period}'
-
             for file in os.listdir(period):
                 file = f'{period}/{file}'
-                print(file)
-
                 img = cv2.imread(file)
                 hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
                 frame_threshed = cv2.inRange(hsv_img, self.PAPER_MIN, self.PAPER_MAX)
                 mean_value = np.mean(frame_threshed)
                 images.append((mean_value, file))
-
             images.sort(key=lambda x: x[0], reverse=True)
-            images = images[5:len(images)]
+            images = images[num_images:len(images)]
             for path in images:
                 os.remove(path[1])
-            print(images)
             images = []
-
-
-
 
     def find_white_square(self, frame_treshed, image_size):
         highest_value = 0
@@ -65,25 +61,17 @@ class ImageProcessor:
                 os.makedirs(directory.replace("download", "background"))
 
             for file in os.listdir(directory):
-
                 file = f'{directory}{file}'
-                # print(file)
                 try:
                     img = cv2.imread(file)
-
                     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
                     frame_threshed = cv2.inRange(hsv_img, self.PAPER_MIN, self.PAPER_MAX)
-                    # cv2.imwrite('output2.jpg', frame_threshed)
-
-
-                    # cv2.waitKey(0)
                     file = file.replace("download", "background").replace(".jp2", ".png")
                     x_min, x_max, y_min, y_max = self.find_white_square(frame_threshed, image_size)
                     img = img[x_min:x_max, y_min:y_max]
                     cv2.imwrite(file, img)
                 except:
-                    print(f"Error with file {file}")
+                    print_telegram(f"Error with file {file}")
 
 
 
