@@ -5,14 +5,14 @@ from src.ImageProcessing.ImageCreation import *
 ImageCreation = ImageCreation()
 ocr = OCR()
 def save_df(index, source_text_list, threads, df):
-    if index % 10 == 0 and index != 0:
+    if index % 1000 == 0 and index != 0:
         for thread in tqdm(threads, token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID,
                            desc="Joining threads of creating images: "):
             thread.join()
         temp_df = df.copy()
         temp_df = temp_df.head(index)
-        print(source_text_list)
-        print(list(zip(*source_text_list))[1])
+        print_telegram(f'Saving dataframe at index {index}')
+        source_text_list.sort(key=lambda x: x[0])
         temp_df['source'] = list(zip(*source_text_list))[1]
         print(temp_df.head())
 
@@ -20,7 +20,7 @@ def save_df(index, source_text_list, threads, df):
 def create_ocr_from_image(index, source_text_list, target_text, year):
     image = ImageCreation.create_image(index, target_text, year)
     ocr_text = ocr.get_text(image)
-    print(f'Source: {ocr_text} ---- Target: {target_text}')
+    # print(f'Source: {ocr_text} ---- Target: {target_text}')
     source_text_list.append((index, ocr_text))
 def create_ocr_dataframe(df):
     source_text_list = []
@@ -28,9 +28,9 @@ def create_ocr_dataframe(df):
 
     for index, row in tqdm(df.iterrows(), token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc="Creating text from images: "):
         # images.append((index, self.create_image(text, index=index)))
-        while psutil.cpu_percent() >= 100:
+        # while psutil.cpu_percent() >= 100:
             # print("Sleep")
-            time.sleep(0.01)
+            # time.sleep(0.01)
 
         save_df(index, source_text_list, threads, df)
 
@@ -67,6 +67,4 @@ def get_dataframe():
     return df
 
 if __name__ == "__main__":
-    temp_list = []
-    create_ocr_from_image(0, temp_list, "Gegroet, kom u allen tezamen", 1950)
-    print(temp_list)
+    get_data()

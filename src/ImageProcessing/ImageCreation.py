@@ -68,7 +68,7 @@ class ImageCreation:
         """
         for path in os.listdir(SAVE_PATH_BACKGROUND_IMAGE):
             years = path.split("-")
-            if int(years[0]) <= year and int(years[1]) > year:
+            if int(years[0]) <= int(year) and int(years[1]) > int(year):
                 return f'{SAVE_PATH_BACKGROUND_IMAGE}/{path}'
         random_path = random.choice(os.listdir(SAVE_PATH_BACKGROUND_IMAGE))
         print_telegram(f"No correct path could be found for year: {year}, thus returning {random_path} instead")
