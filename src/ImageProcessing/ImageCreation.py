@@ -80,11 +80,32 @@ class ImageCreation:
         :param year:
         :return:
         """
-        # FONT_FAMILY = "../fonts/BreitkopfFraktur.ttf"
-        FONT_FAMILY = "arial.ttf"
-        FONT_SIZE = 25
+
+        if year < 1650:
+            FONT_FAMILY = "../fonts/textur.ttf"
+            FONT_SIZE = 14
+        elif year >= 1650 and year < 1700:
+            fonts = ["../fonts/textur.ttf"]#, "../fonts/jenson-roman.ttf"]
+            FONT_FAMILY = random.choice(fonts)
+            FONT_SIZE = 14
+        elif year >= 1700 and year < 1931:
+            FONT_FAMILY = "../fonts/caslon.ttf"
+            FONT_SIZE = 12
+        elif year >= 1931:
+            FONT_FAMILY = "../fonts/times-new-roman.ttf"
+            FONT_SIZE = 14
+
+        print_telegram(FONT_FAMILY)
         font = ImageFont.truetype(FONT_FAMILY, FONT_SIZE)
         return font
+
+    def apply_blur(self, img, year):
+        if year < 1700:
+            img = img.filter(ImageFilter.BoxBlur(0.04))
+        elif year >= 1700:
+            img = img.filter(ImageFilter.BoxBlur(0.15))
+        return img
+
 
     def create_image(self, index, ocr_text, year):
         """
@@ -113,11 +134,12 @@ class ImageCreation:
         path = f'../images/{index}.jpg'
         img.save(path)
 
-        for i in range(round(img.size[0] * img.size[1] / 150 )):
+        for i in range(round(img.size[0] * img.size[1] / 140 )):
             img.putpixel(
                 (random.randint(0, img.size[0] - 1), random.randint(0, img.size[1] - 1)),
                 (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             )
+        img = self.apply_blur(img, year)
         path = f'../images/noise-{index}.jpg'
         img.save(path)
         return img
