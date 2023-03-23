@@ -88,12 +88,12 @@ class ImageCreation:
             fonts = ["../fonts/textur.ttf"]#, "../fonts/jenson-roman.ttf"]
             FONT_FAMILY = random.choice(fonts)
             FONT_SIZE = 14
-        elif year >= 1700 and year < 1931:
+        elif year >= 1700: #and year < 1931:
             FONT_FAMILY = "../fonts/caslon.ttf"
             FONT_SIZE = 12
-        elif year >= 1931:
-            FONT_FAMILY = "../fonts/times-new-roman.ttf"
-            FONT_SIZE = 14
+        # elif year >= 1931:
+        #     FONT_FAMILY = "../fonts/times-new-roman.ttf"
+        #     FONT_SIZE = 13
 
         print_telegram(FONT_FAMILY)
         font = ImageFont.truetype(FONT_FAMILY, FONT_SIZE)
@@ -102,8 +102,11 @@ class ImageCreation:
     def apply_blur(self, img, year):
         if year < 1700:
             img = img.filter(ImageFilter.BoxBlur(0.04))
-        elif year >= 1700:
+        elif year >= 1700 and year < 1931:
             img = img.filter(ImageFilter.BoxBlur(0.15))
+        # elif year >= 1931:
+        #     img = img.filter(ImageFilter.BoxBlur(0.20))
+
         return img
 
 

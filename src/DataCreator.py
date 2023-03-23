@@ -68,5 +68,5 @@ def get_dataframe():
 
 if __name__ == "__main__":
     temp_list = []
-    create_ocr_from_image(0, temp_list, "Haar onderwerp is intusschen voor ons vaderland zoo allergewigtigst, dat men bijna geregtigd kan zijn tot de vraag, of niet veeleer de orde van behandeling behoorde te worden omgekeerd", 1690)
+    create_ocr_from_image(0, temp_list, "Haar onderwerp is intusschen voor ons vaderland zoo allergewigtigst, dat men bijna geregtigd kan zijn tot de vraag, of niet veeleer de orde van behandeling behoorde te worden omgekeerd", 1930)
     print(temp_list)
