@@ -95,15 +95,15 @@ class ImageCreation:
         #     FONT_FAMILY = "../fonts/times-new-roman.ttf"
         #     FONT_SIZE = 13
 
-        print_telegram(FONT_FAMILY)
+        # print_telegram(FONT_FAMILY)
         font = ImageFont.truetype(FONT_FAMILY, FONT_SIZE)
         return font
 
     def apply_blur(self, img, year):
         if year < 1700:
-            img = img.filter(ImageFilter.BoxBlur(0.04))
+            img = img.filter(ImageFilter.BoxBlur(0.01))
         elif year >= 1700 and year < 1931:
-            img = img.filter(ImageFilter.BoxBlur(0.15))
+            img = img.filter(ImageFilter.BoxBlur(0.04))
         # elif year >= 1931:
         #     img = img.filter(ImageFilter.BoxBlur(0.20))
 
@@ -117,6 +117,7 @@ class ImageCreation:
         :param ocr_text: The text to be turned into an image.
         :param image_list: The list to add the image to. This is a pass by reference list, used by multiple threads at once.
         """
+        year = int(year)
         # if year == "0000":
         #     year = random.randint(1637,1900)
         path = self.get_time_period_path(year)

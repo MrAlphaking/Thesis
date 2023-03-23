@@ -31,11 +31,11 @@ def clean_dataframe(df):
     df['target'] = df['target'].apply(lambda x: x.strip())
     df['target'] = df['target'].apply(lambda x: re.sub('[^A-Za-z0-9,.;\s]+', '', x))
 
-    df = df[df['target'].apply(lambda x: x.count(' ') > MIN_WORDS)]
-    df = df[df['target'].apply(lambda x: x.count(' ') < MAX_WORDS)]
+    df = df[df['target'].apply(lambda x: x.count(' ') > MIN_WORDS and x.count(' ') < MAX_WORDS)]
+    # df = df[df['target'].apply(lambda x: x.count(' ') < MAX_WORDS)]
     df = df[df['target'].apply(lambda x: not(any(char.isdigit() for char in x)))]
     df = df[df['target'].apply(lambda x: x != 'NaN')]
-    df = df[df['year'].apply(lambda x: x != '0000')]
+    df = df[df['year'].apply(lambda x: x != '0000' and not '-' in str(x) and str(x) != '0')]
     df = df.drop_duplicates(subset=['target'])
     df = df.reset_index(drop=True)
     return df
