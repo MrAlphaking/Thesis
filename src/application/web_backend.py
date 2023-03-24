@@ -9,10 +9,10 @@ from src.utils.Delpher import *
 app = Flask(__name__)
 
 
-tokenizer = AutoTokenizer.from_pretrained("../models/t5-base-dutch-post-correction-50000")
-model = AutoModelWithLMHead.from_pretrained("../models/t5-base-dutch-post-correction-50000")
-# tokenizer = AutoTokenizer.from_pretrained("ml6team/byt5-base-dutch-ocr-correction")
-# model = AutoModelWithLMHead.from_pretrained("ml6team/byt5-base-dutch-ocr-correction")
+# tokenizer = AutoTokenizer.from_pretrained("../models/t5-base-dutch-post-correction-50000")
+# model = AutoModelWithLMHead.from_pretrained("../models/t5-base-dutch-post-correction-50000")
+tokenizer = AutoTokenizer.from_pretrained("../models/google-flan-t5-base-post-correction-140000")
+model = AutoModelWithLMHead.from_pretrained("../models/google-flan-t5-base-post-correction-140000")
 task_prefix = 'post-correction: '
 delpher = Delpher()
 def post_correct(input_text):
@@ -62,7 +62,7 @@ def calculate_result():
     #                            string.digits, k=100))
 
     year = random.randint(1700, 1900)
-    response = delpher.query(1920, maximum_records=1)
+    response = delpher.query(1618, 1650, maximum_records=1)
     for key in response:
         # print(response[key]['ocr'])
         # print(requests.get(response[key]['ocr']).content)
