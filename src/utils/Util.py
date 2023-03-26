@@ -31,7 +31,7 @@ def read_pandas(path):
     return pd.read_csv(path)
 
 def progress_bar(item_list, desc=""):
-    return tqdm(item_list, token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc=desc, miniters=int(len(item_list)/1000), mininterval=1)
+    return tqdm(item_list, token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc=desc, miniters=int(len(item_list)/100), mininterval=1, maxinterval=float("inf"))
 def print_telegram(text):
     stack = inspect.stack()
     if "self" in stack[1][0].f_locals:
