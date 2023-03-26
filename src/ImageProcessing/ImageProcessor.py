@@ -39,9 +39,9 @@ class ImageProcessor:
         y_min = 0
         y_max = image_size
 
-        for x in range(0, len(frame_treshed), image_size):
-            for y in range(0, len(frame_treshed[x]), image_size):
-                if x - len(frame_treshed) > image_size and y - len(frame_treshed[x])     > image_size:
+        for x in range(0, len(frame_treshed), int(image_size / 10)):
+            for y in range(0, len(frame_treshed[x]), int(image_size / 10)):
+                if x - len(frame_treshed) > image_size and y - len(frame_treshed[x]) > image_size:
                     mean_value = np.mean(frame_treshed[x:(x + image_size), y:(y+image_size)])
                     if mean_value > highest_value:
                         highest_value = mean_value
@@ -64,8 +64,11 @@ class ImageProcessor:
                 file = f'{directory}{file}'
                 try:
                     img = cv2.imread(file)
+                    # cv2.imwrite('../images/frame_treshold_no_filter.png', img)
                     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
                     frame_threshed = cv2.inRange(hsv_img, self.PAPER_MIN, self.PAPER_MAX)
+                    # cv2.imwrite('../images/frame_treshold.png', frame_threshed)
                     file = file.replace("download", "background").replace(".jp2", ".png")
                     x_min, x_max, y_min, y_max = self.find_white_square(frame_threshed, image_size)
                     img = img[x_min:x_max, y_min:y_max]
