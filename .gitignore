@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+src/tessdata/
 # Distribution / packaging
 .Python
 build/
@@ -169,3 +169,8 @@ src/cache_dir/
 /src/predictions.csv
 /src/t5-base-multi-your-sentence-doctor/
 /src/models/
+/images/
+/tessdata/
+tesserocr-2.5.2-cp310-cp310-win_amd64.whl
+*.jp2
+src/tessdata/configs/alto

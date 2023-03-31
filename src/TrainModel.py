@@ -1,26 +1,49 @@
-from src.ImageProcessing.ImageCreation import *
+import os
+from finetune_trainer import *
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, T5Tokenizer
 from OCR import *
-from src.utils.Util import print_telegram
+from src.ImageProcessing.ImageProcessor import ImageProcessor
+from src.utils.Delpher import Delpher
+
+import DataCreator
 # import DataCreator
-import torch
-from transformers import AutoTokenizer, AutoModelWithLMHead
 
-tokenizer = AutoTokenizer.from_pretrained("models/t5-base-dutch-post-correction-50000")
-model = AutoModelWithLMHead.from_pretrained("models/t5-base-dutch-post-correction-50000")
+tokenizer1 = AutoTokenizer.from_pretrained("models/t5-base-dutch-post-correction-50000")
+model1 = AutoModelForSeq2SeqLM.from_pretrained("models/t5-base-dutch-post-correction-50000")
 
-def post_correct(input_text):
-    input_ids = tokenizer.encode(input_text, return_tensors="pt")
-    outputs = model.generate(input_ids, max_length=256, num_beams=1)
-    return tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+tokenizer2 = AutoTokenizer.from_pretrained("models/google-flan-t5-base-post-correction-140000")
+model2 = AutoModelForSeq2SeqLM.from_pretrained("models/google-flan-t5-base-post-correction-140000")
+
+def post_correct1(input_text):
+    input_ids = tokenizer1.encode(input_text, return_tensors="pt")
+    outputs = model1.generate(input_ids, max_length=256, num_beams=1)
+    return tokenizer1.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+
+def post_correct2(input_text):
+    input_ids = tokenizer2.encode(input_text, return_tensors="pt")
+    outputs = model2.generate(input_ids, max_length=256, num_beams=1)
+    return tokenizer2.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
 
 def pretty_print(input, expected_output):
     before = input.replace("post-correction: ", "").replace("</s>", "")
     print(f"Before: \t\t\t{before}")
-    print(f"Model Generated: \t{post_correct(input)}")
+    print(f"Model 1 Generated: \t{post_correct1(input)}")
+    print(f"Model 2 Generated: \t{post_correct2(input)}")
     print(f"Should have been: \t{expected_output}")
     print()
 
+# os.environ['OPENCV_LOG_LEVEL']='OFF'
+
 if __name__ == "__main__":
+    # trainer = Trainer()
+    #
+    # df = DataCreator.get_dataframe()
+    # df = df.sample(DATASET_SIZE)
+    # df['source'] = "post-correction: " + df['source']
+    #
+    # trainer.start(df)
+
+    # img.show()
     input_text_1 = "post-correction: over de woningbow zei spreckster, dat de vrije bouver wiet am bod kont</s>"
     expected_output_1 = "Over de woningbouw zei spreekster, dat de vrije bouwer niet aan bod komt"
     pretty_print(input_text_1, expected_output_1)

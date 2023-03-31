@@ -1,5 +1,16 @@
 # Thesis
 
+### Datasets
+The datasets used in this program are the following:
+
+| Name                 | Description                                                                                | Source                                                           |
+|----------------------|--------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| DBNL                 | Containing 220 books                                                                       | https://lab.kb.nl/dataset/dbnl-ocr-data-set                      |
+| Historical Newspaper | 2000 pages of ground-truth data of newspapers                                              | https://lab.kb.nl/dataset/historical-newspapers-ocr-ground-truth |
+| IMPACT project       | 2055 book pages, 1024 newspaper pages, 1179 parliamentary proceedings, 205 radio bulletins | https://lab.kb.nl/dataset/ground-truth-impact-project            |
+| 17th_century         | Around 30000, 17th century articles                                                        |                                                                  |
+| Bible                | The 'Statenvertaling' bible from 1637                                                      |                                                                  |
+ 
     # Create training and evaluation dataset
     # OCR data collection
     #   - Collect corrected texts for various time periods

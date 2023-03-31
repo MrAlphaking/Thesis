@@ -1,0 +1,4 @@
+.sourcetext, .resulttext, .imagetext{
+    float:left;
+    width: 33.33%;
+}

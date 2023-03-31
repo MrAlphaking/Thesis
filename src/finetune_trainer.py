@@ -1,20 +1,18 @@
-from torch import cuda
-import numpy as np
-import pandas as pd
-import torch
-from src.utils.Settings import *
-from torch.utils.data import Dataset, DataLoader
-from transformers import T5Tokenizer, T5ForConditionalGeneration, AutoTokenizer, AutoModelForSeq2SeqLM
-from transformers import TFT5ForConditionalGeneration
-import wandb
-import DataCreator
-from src.utils.Util import *
-
 import os
 
-if not os.path.exists(MODEL_SAVE_FOLDER + '/predictions'):
-   os.makedirs(MODEL_SAVE_FOLDER + '/predictions' )
+import numpy as np
+from torch import cuda
+from torch.utils.data import DataLoader, Dataset
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, T5Tokenizer
+
+import DataCreator
+import wandb
+from src.utils.Util import *
+
+
 # PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+
+
 
 def get_device():
     # return 'cpu'
@@ -140,7 +138,7 @@ class Trainer:
         return predictions, actuals, sources
 
     def start(self, df, delimiter: str = "\t"):
-        wandb.init(project="thesis-test")
+        wandb.init(project="thesis-thomas")
 
         config = wandb.config
         config.TRAIN_BATCH_SIZE = 4
@@ -155,7 +153,7 @@ class Trainer:
         np.random.seed(config.SEED)
         torch.backends.cudnn.deterministic = True
 
-        tokenizer = AutoTokenizer.from_pretrained("yhavinga/t5-base-dutch")
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         print_telegram(df.head())
 
@@ -189,7 +187,7 @@ class Trainer:
         training_loader = DataLoader(training_set, **train_params)
         val_loader = DataLoader(val_set, **val_params)
 
-        model = AutoModelForSeq2SeqLM.from_pretrained("yhavinga/t5-base-dutch")
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
         device = get_device()
         model = model.to(device)
@@ -217,9 +215,15 @@ class Trainer:
 
 
 if __name__ == '__main__':
+    model_name = 'google/flan-t5-base'
+    # model_name = 'yhavinga/t5-base-dutch'
+    MODEL_SAVE_FOLDER = f'{MODEL_SAVE_FOLDER}{model_name.replace("/","-")}-post-correction-{DATASET_SIZE}'
+    if not os.path.exists(MODEL_SAVE_FOLDER + '/predictions'):
+        os.makedirs(MODEL_SAVE_FOLDER + '/predictions')
     trainer = Trainer()
 
     df = DataCreator.get_dataframe()
+    df = DataCreator.clean_dataframe(df)
     df = df.sample(DATASET_SIZE)
     df['source'] = "post-correction: " + df['source']
 
