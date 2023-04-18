@@ -1,13 +1,9 @@
-import requests
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, jsonify
 from transformers import AutoModelWithLMHead, AutoTokenizer
-import random
-from src.utils.Util import progress_bar
-import string
-import requests
-from src.utils.Delpher import *
-app = Flask(__name__)
 
+from src.utils.Delpher import *
+
+app = Flask(__name__)
 
 tokenizer = AutoTokenizer.from_pretrained("../models/t5-base-dutch-post-correction-50000")
 model = AutoModelWithLMHead.from_pretrained("../models/t5-base-dutch-post-correction-50000")
@@ -15,11 +11,14 @@ model = AutoModelWithLMHead.from_pretrained("../models/t5-base-dutch-post-correc
 # model = AutoModelWithLMHead.from_pretrained("../models/google-flan-t5-base-post-correction-140000")
 task_prefix = 'post-correction: '
 delpher = Delpher()
+
+
 def post_correct(input_text):
     input_text = task_prefix + input_text + "</s>"
     input_ids = tokenizer.encode(input_text, return_tensors="pt")
     outputs = model.generate(input_ids, max_length=256, num_beams=1)
     return tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+
 
 def post_correct_block(input_text):
     sentences = input_text.split(".")
@@ -48,11 +47,10 @@ def post_correct_block(input_text):
     return output_string, return_sentences
 
 
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/calculate_result')
 def calculate_result():
@@ -62,7 +60,7 @@ def calculate_result():
     #                            string.digits, k=100))
 
     year = random.randint(1700, 1900)
-    response = delpher.query(1940,1950, maximum_records=1)
+    response = delpher.query(1940, 1950, maximum_records=1)
     for key in response:
         # print(response[key]['ocr'])
         # print(requests.get(response[key]['ocr']).content)

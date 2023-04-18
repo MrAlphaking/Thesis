@@ -52,6 +52,17 @@ class ImageProcessor:
                         y_max = y + image_size
         return x_min, x_max, y_min, y_max
 
+    def test(self):
+        for directory in progress_bar(os.listdir(self.save_location)):
+            directory = f'{self.save_location}/{directory}/'
+            for file in os.listdir(directory):
+                file = f'{directory}{file}'
+                try:
+                    img = cv2.imread(file)
+                    print(img.shape)
+                except:
+                    print("")
+
     def create_rectangles(self, image_size, offset_x, offset_y):
         for directory in progress_bar(os.listdir(self.save_location)):
             directory = f'{self.save_location}/{directory}/'
