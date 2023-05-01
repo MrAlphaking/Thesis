@@ -88,14 +88,13 @@ class ImageCreation:
         FONT_SIZE = 14
 
         global FONT_FAMILY
-        if year < 1650:
+        if year < 1700:
             FONT_FAMILY = "../fonts/textur.ttf"
-
-        elif year >= 1650 and year < 1700:
-            fonts = ["../fonts/caslon.ttf"]  # , "../fonts/jenson-roman.ttf"]
+        elif year >= 1750 and year < 1800:
+            fonts = ["../fonts/caslon.ttf", "../fonts/textur.ttf"]  # , "../fonts/jenson-roman.ttf"]
             FONT_FAMILY = random.choice(fonts)
             FONT_SIZE = 14
-        elif year >= 1700:  # and year < 1931:
+        elif year >= 1800:  # and year < 1931:
             FONT_FAMILY = "../fonts/caslon.ttf"
             FONT_SIZE = 12
         # elif year >= 1931:
@@ -169,9 +168,6 @@ class ImageCreation:
     #     return return_text
     
     def create_background(self, year, width, height):
-        year = int(year)
-        if year == "0000":
-            year = random.randint(1637,1900)
         path = self.get_time_period_path(year)
         files = os.listdir(path)
         chosen_file = files[random.randint(0, len(files) - 1)]
@@ -204,7 +200,8 @@ class ImageCreation:
 
         # img = background
         if year == "0000":
-            year = random.randint(1618, 1995)
+            year = random.randint(1637,1900)
+        year = int(year)
         # img_size = img.size
         # ocr_text = self.merge_lines(ocr_text)
         text_spacing = 4
