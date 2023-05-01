@@ -51,52 +51,59 @@ def create_ocr_dataframe2(df):
     # df['source'] = source_text_list
     return df
 
-def create_ocr_from_image_by_dataframe(index, df):
-
-
-
-    df.groupby('year')
-    years = list(df["year"].unique())
-    print(years)
-
-    year = 1650
+def create_ocr_from_image_by_dataframe(index, df_list, df, year):
     df = df.loc[df['year'] == year]
     df = df.reset_index(drop=True)
 
-    img = ImageCreation.create_background(year, 1772, 3000)
-    # img.show()
+    # img = ImageCreation.create_background(year, 1772, 3000)
 
     ocr_text = list(df["target"])
-    print(df)
 
-    ImageCreation.create_image_from_df(0, img, 1770, 3000, ocr_text, 1650)
+    img, text_spacings = ImageCreation.create_image_from_df(0, 1770, ocr_text, year)
+    path = f'../images/{index}-{year}.png'
+    img.save(path)
+    previous_spacing = 0
 
-    # image = ImageCreation.create_image2(index, target_text, year)
-    # ocr_text = ocr.get_text(image)
-    # print(f'Source: {ocr_text}\nTarget: {target_text}')
-    # source_text_list.append((index, ocr_text))
+    ocr_text_list = []
+    for spacing in text_spacings:
+        cropped_image = img.crop((0, previous_spacing, img.size[0], spacing))
+        previous_spacing = spacing
+        ocr_text = ocr.get_text(cropped_image)
+        ocr_text_list.append(ocr_text)
 
+    df['source'] = ocr_text_list
+
+    df_list.append(df)
 
 def create_ocr_dataframe(df):
+    """
+    By giving as input a dataframe, this function creates an image per year, and then creates the ocr output for each of the strings.
+    :param df:
+    :return:
+    """
+
     df.groupby('year')
     years = list(df["year"].unique())
+    years.sort()
     print(years)
-    source_text_list = []
     threads = list()
+    df_list = list()
 
     for index, year in enumerate(progress_bar(years, desc='Creating OCR per year')):
         while psutil.cpu_percent() >= 100:
             # print("Sleep")
             time.sleep(0.01)
-        x = threading.Thread(target=create_ocr_from_image_by_dataframe, args=(index, df.loc[df['year'] == year],))
+        x = threading.Thread(target=create_ocr_from_image_by_dataframe, args=(index, df_list, df, year,))
         threads.append(x)
         x.start()
 
     for thread in progress_bar(threads, desc='Joining thread of creating images: '):
         thread.join()
-    # source_text_list.sort(key=lambda x: x[0])
-    # df['source'] = list(zip(*source_text_list))[1]
-    # df['source'] = source_text_list
+
+    df = pd.concat(df_list)
+    df.reset_index(drop=True)
+
+    print(df)
     return df
 
 def get_dataframe():
@@ -105,26 +112,14 @@ def get_dataframe():
         return df
 
     df = get_data()
-    # df = df.iloc[121000:122000]
-
     print(df.head())
-
     df = create_ocr_dataframe(df)
-
-    # print(list(df['target']))
-    # image_list = ImageCreation.create_image_list(df)
-    # ocr_list = ocr.get_ocr_list(image_list)
-    # df['source'] = ocr_list
-    # ImageCreation.remove_image_list(image_list)
 
     if WRITE_FILE_POST_OCR:
         write_pandas(df, SAVE_PATH_POST_OCR)
     return df
 
-if __name__ == "__main__":
-    df = get_data()
-
-    create_ocr_from_image_by_dataframe(0, df)
-    # temp_list = []
-    # create_ocr_from_image(0, temp_list, "Haar onderwerp is intusschen voor ons vaderland zoo allergewigtigst, dat men bijna geregtigd kan zijn tot de vraag, of niet veeleer de orde van behandeling behoorde te worden omgekeerd", 1650)
-    # print(temp_list)
+# if __name__ == "__main__":
+#     df = get_data()
+#     df_list = []
+#     create_ocr_dataframe(df)

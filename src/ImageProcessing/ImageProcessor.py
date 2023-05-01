@@ -42,7 +42,7 @@ class ImageProcessor:
         for x in range(0, len(frame_treshed), int(image_size / 10)):
             for y in range(0, len(frame_treshed[x]), int(image_size / 10)):
                 if x - len(frame_treshed) > image_size and y - len(frame_treshed[x]) > image_size:
-                    mean_value = np.mean(frame_treshed[x:(x + image_size), y:(y+image_size)])
+                    mean_value = np.sum(frame_treshed[x:(x + image_size), y:(y+image_size)])
                     if mean_value > highest_value:
                         highest_value = mean_value
                         x_min = x
