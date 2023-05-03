@@ -215,16 +215,25 @@ class Trainer:
 
 
 if __name__ == '__main__':
-    model_name = 'google/flan-t5-base'
+    # model_name = 'google/flan-t5-base'
     # model_name = 'yhavinga/t5-base-dutch'
-    MODEL_SAVE_FOLDER = f'{MODEL_SAVE_FOLDER}{model_name.replace("/","-")}-post-correction-{DATASET_SIZE}'
-    if not os.path.exists(MODEL_SAVE_FOLDER + '/predictions'):
-        os.makedirs(MODEL_SAVE_FOLDER + '/predictions')
-    trainer = Trainer()
-
+    model_names = ['google/flan-t5-base', 'yhavinga/t5-base-dutch', 'ml6team/byt5-base-dutch-ocr-correction']
     df = DataCreator.get_dataframe()
     df = DataCreator.clean_dataframe(df)
+    df['target'] = df['target'].apply(lambda x: str(x))
+    df = df[df['target'].apply(lambda x: x != 'NaN' and x != None and x != 'None' and x != 'nan')]
+    df = df.reset_index(drop=True)
     df = df.sample(DATASET_SIZE)
+
+    write_pandas(df, 'DBNL_USED_DATASET')
     df['source'] = "post-correction: " + df['source']
 
-    trainer.start(df)
+    for model_name in model_names:
+        MODEL_SAVE_FOLDER = f'{MODEL_SAVE_FOLDER}{model_name.replace("/","-")}-17th-post-correction-{DATASET_SIZE}'
+        if not os.path.exists(MODEL_SAVE_FOLDER + '/predictions'):
+            os.makedirs(MODEL_SAVE_FOLDER + '/predictions')
+        trainer = Trainer()
+
+
+
+        trainer.start(df)

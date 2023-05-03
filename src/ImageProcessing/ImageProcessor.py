@@ -9,7 +9,7 @@ class ImageProcessor:
         self.PAPER_MAX = np.array([150, 255, 255], np.uint8)
         print("Image processor class created")
         self.save_location = save_location
-    def clean_rectangles(self, background_location, num_images=5):
+    def clean_rectangles(self, background_location, num_images=20):
         """
         This function iterates over the rectangles created, and finds a set number of images to be used as background, based on how much black is in the image.
         :param background_location: The location of the images containing the downloaded background images.
@@ -41,9 +41,12 @@ class ImageProcessor:
 
         for x in range(0, len(frame_treshed), int(image_size / 10)):
             for y in range(0, len(frame_treshed[x]), int(image_size / 10)):
-                if x - len(frame_treshed) > image_size and y - len(frame_treshed[x]) > image_size:
+
+                if x - len(frame_treshed) < image_size and y - len(frame_treshed[x]) < image_size:
                     mean_value = np.sum(frame_treshed[x:(x + image_size), y:(y+image_size)])
+                    # print(mean_value)
                     if mean_value > highest_value:
+                        # print(mean_value)
                         highest_value = mean_value
                         x_min = x
                         x_max = x + image_size
@@ -71,6 +74,10 @@ class ImageProcessor:
             if not os.path.exists(save_background_location):
                 os.makedirs(directory.replace("download", "background"))
 
+            save_treshold_location = directory.replace("download", "treshold")
+            if not os.path.exists(save_treshold_location):
+                os.makedirs(directory.replace("download", "treshold"))
+
             for file in os.listdir(directory):
                 file = f'{directory}{file}'
                 try:
@@ -79,8 +86,12 @@ class ImageProcessor:
                     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
                     frame_threshed = cv2.inRange(hsv_img, self.PAPER_MIN, self.PAPER_MAX)
+                    # file_treshold = file.replace("download", "treshold").replace(".jp2", ".png")
                     # cv2.imwrite('../images/frame_treshold.png', frame_threshed)
                     file = file.replace("download", "background").replace(".jp2", ".png")
+                    # cv2.imwrite(file_treshold, frame_threshed)
+                    # print(file_treshold)
+
                     x_min, x_max, y_min, y_max = self.find_white_square(frame_threshed, image_size)
                     img = img[x_min:x_max, y_min:y_max]
                     cv2.imwrite(file, img)
