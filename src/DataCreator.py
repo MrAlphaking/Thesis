@@ -105,6 +105,41 @@ def create_ocr_dataframe(df):
 
     print(df)
     return df
+import collections
+def equal_distribution_dataframe(df, sample_size=50000):
+    print(collections.Counter(list(df['year'])).most_common())
+    least_common = collections.Counter(list(df['year'])).most_common()[-1]
+    print(least_common[1])
+    return df.groupby("year").sample(n=least_common[1], random_state=1)
+import numpy as np
+def sample_dataframe(df, sample_size):
+    # Calculate the number of unique values in the 'year' column
+    num_years = df['year'].nunique()
+
+    # Calculate the target sample size for each unique year
+    sample_size_per_year = int(np.ceil(sample_size / num_years))
+
+    # Group the DataFrame by the 'year' column
+    grouped = df.groupby('year')
+
+    # Sample from each group proportionally to the number of rows in the group
+    total_size = 0
+    while total_size < sample_size:
+        samples = []
+        for _, group in grouped:
+            n_rows = len(group)
+            if n_rows > sample_size_per_year:
+                samples.append(group.sample(sample_size_per_year))
+            else:
+                samples.append(group.sample(n_rows, replace=True))
+        total_size = len(pd.concat(samples))
+        sample_size_per_year += 1
+
+    print("finished")
+    # Combine the samples from each group into a single DataFrame
+    sample_df = pd.concat(samples)
+
+    return sample_df
 
 def get_dataframe():
     if READ_FROM_FILE_POST_OCR:
@@ -112,7 +147,14 @@ def get_dataframe():
         return df
 
     df = get_data()
+
+    df = clean_dataframe(df)
+    print(collections.Counter(list(df['year'])).most_common())
+    df = sample_dataframe(df, 50000)
+    print(len(df))
     print(df.head())
+    print(collections.Counter(list(df['year'])).most_common())
+    df = clean_dataframe(df)
     df = create_ocr_dataframe(df)
 
     if WRITE_FILE_POST_OCR:

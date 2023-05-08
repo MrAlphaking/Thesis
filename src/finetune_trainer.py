@@ -213,17 +213,22 @@ class Trainer:
         tokenizer.save_pretrained(MODEL_SAVE_FOLDER)
         model.save_pretrained(MODEL_SAVE_FOLDER)
 
+import collections
+def equal_distribution_dataframe(df):
+    least_common = collections.Counter(list(df['year'])).most_common()[-1]
+    print(least_common[1])
+    return df.groupby("year").sample(n=least_common[1], random_state=1)
 
 if __name__ == '__main__':
     # model_name = 'google/flan-t5-base'
     # model_name = 'yhavinga/t5-base-dutch'
     model_names = ['google/flan-t5-base', 'yhavinga/t5-base-dutch']
     df = DataCreator.get_dataframe()
-    df = DataCreator.clean_dataframe(df)
 
-    # df = df.sample(DATASET_SIZE)
 
-    write_pandas(df, 'statenvertaling_USED_DATASET')
+    df = df.sample(DATASET_SIZE)
+
+    write_pandas(df, 'TOTAL_USED_DATASET')
     df['source'] = "post-correction: " + df['source']
 
     for model_name in model_names:
