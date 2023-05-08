@@ -26,6 +26,10 @@ delpher = Delpher()
 ##### Utils
 
 def clean_dataframe(df):
+    if 'source' in df.columns:
+        df['source'] = df['source'].apply(lambda x: str(x))
+        df = df[df['source'].apply(lambda x: x != 'NaN' and x != None and x != 'None' and x != 'nan')]
+        df = df.reset_index(drop=True)
     df['year'] = df['year'].apply(lambda x: str(x))
     df['target'] = df['target'].apply(lambda x: str(x))
     df['target'] = df['target'].replace(r'\s+', ' ', regex=True)
@@ -60,7 +64,9 @@ def get_data():
     # data_list = [impact_newspapers]
     # data_list = [statenvertaling]
     # data_list = [dbnl]
-    data_list = [seventeenth_century_newspaper]
+    # data_list = [seventeenth_century_newspaper]
+    # data_list = [historical_newspaper]
+    data_list = [statenvertaling]
     # data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins]
     dataframes = []
 
