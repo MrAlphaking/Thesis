@@ -59,7 +59,7 @@ def get_data():
     seventeenth_century_newspaper = SeventeenthCentury(SAVE_PATH_17THCENTURYNEWSPAPER, delpher)
     statenvertaling = Statenvertaling(SAVE_PATH_STATENVERTALING)
 
-    # data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, dbnl, historical_newspaper, seventeenth_century_newspaper]
+    data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, dbnl, historical_newspaper, seventeenth_century_newspaper]
     # data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, dbnl]
     # data_list = [impact_newspapers]
     # data_list = [statenvertaling]

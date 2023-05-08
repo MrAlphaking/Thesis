@@ -4,7 +4,7 @@ BASE_PATH = '../../data/Ground Truth/'
 #BASE_PATH = '/media/sf_GitHub/data/Ground Truth/'
 
 # DataLoader.py
-READ_FROM_FILE_PRE_OCR = False
+READ_FROM_FILE_PRE_OCR = True
 READ_FROM_FILE_POST_OCR = False
 READ_FROM_FILE_INTERMEDIATES = True
 WRITE_FILE_POST_OCR = True
