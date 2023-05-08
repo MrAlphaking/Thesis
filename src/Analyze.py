@@ -156,14 +156,36 @@ def post_correct_list(input_text, model, tokenizer):
         return_list.append(post_correct(sentence, model, tokenizer))
     return return_list
 
+def sample_dataframe(df, sample_size):
+    # Calculate the number of unique values in the 'year' column
+    num_years = df['year'].nunique()
+
+    # Calculate the target sample size for each unique year
+    sample_size_per_year = int(np.ceil(sample_size / num_years))
+
+    # Group the DataFrame by the 'year' column
+    grouped = df.groupby('year')
+
+    # Sample from each group proportionally to the number of rows in the group
+    samples = []
+    for _, group in grouped:
+        n_rows = len(group)
+        if n_rows > sample_size_per_year:
+            samples.append(group.sample(sample_size_per_year))
+        else:
+            samples.append(group.sample(n_rows, replace=True))
+
+    # Combine the samples from each group into a single DataFrame
+    sample_df = pd.concat(samples)
+
+    # Trim the sample to the desired sample size
+    sample_df = sample_df.sample(sample_size)
+
+    return sample_df
 def equal_distribution_dataframe(df):
     least_common = collections.Counter(list(df['year'])).most_common()[-1]
     print(least_common[1])
     return df.groupby("year").sample(n=least_common[1], random_state=1)
-    # nrows = len(df)
-    # total_sample_size = 1e4
-    # df.groupby('year').apply(lambda x: x.sample(int((x.count() / nrows) * sample_size)))
-    # return df
 def print_statistics():
     df_names = ['PRE_OCR_CLEANED_statenvertaling', 'PRE_OCR_CLEANED_IMPACT', 'PRE_OCR_CLEANED_historical', 'PRE_OCR_CLEANED_DBNL', 'PRE_OCR_CLEANED_17th']
     for df_name in df_names:
