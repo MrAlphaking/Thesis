@@ -2,6 +2,7 @@ from collections import Counter
 from data_loader.DataLoader import *
 from transformers import AutoModelWithLMHead, AutoTokenizer, AutoModelForSeq2SeqLM
 # df = get_data()
+import collections
 import Levenshtein
 
 
@@ -67,32 +68,55 @@ def wer_cer_jaccard(pred_list, truth_list):
     avg_jaccard = sum(jaccard_scores) / len(jaccard_scores)
     return avg_wer, avg_cer, avg_jaccard, len(pred_words_set), len(truth_words_set)
 
+# def plot1(df):
+#     """
+#     prints the total amount of sentences per time period
+#     :param df: The df that contains the sentences
+#     """
+#     print("Plot 1 Sentences")
+#     xtick_dict = get_xticklabels()
+#     years = list(df['year'])
+#     years.sort()
+#     # print(count[years[0]])
+#     freq = Counter()
+#     for x in years:
+#         freq[(x - 1) // 10] += 1
+#     # print(freq.values())
+#     # print(freq.keys())
+#
+#     for index, key in enumerate(freq.keys()):
+#         print(f'({xtick_dict[f"{key}0-{key}9"]}, {freq[key]}) %{key}0-{key}9')
+
 def plot1(df):
     """
-    prints the total amount of sentences per time period
+    prints the amount of words in the total vocabulary per year
     :param df: The df that contains the sentences
     """
-    xtick_dict = get_xticklabels()
-    years = list(df['year'])
+    print("Plot 1 Sentences")
+    years = list(set(df['year']))
     years.sort()
-    # print(count[years[0]])
-    freq = Counter()
-    for x in years:
-        freq[(x - 1) // 10] += 1
-    # print(freq.values())
-    # print(freq.keys())
+    # print(df)
+    max = 0
+    for year in years:
+        df_temp = df[df['year'] == int(year)]
+        df_temp.reset_index(drop=True)
+        target_texts = list(df_temp['target'])
 
-    for index, key in enumerate(freq.keys()):
-        print(f'({xtick_dict[f"{key}0-{key}9"]}, {freq[key]}) %{key}0-{key}9')
+        amount_of_sentences = len(target_texts)
+        if amount_of_sentences > max:
+            max = amount_of_sentences
+        print(f'({year}, {amount_of_sentences})')
 
+    print(f'max value = {max}')
 def plot2(df):
     """
     prints the amount of words in the total vocabulary per year
     :param df: The df that contains the sentences
     """
+    print("Plot 2 Words")
     years = list(set(df['year']))
     years.sort()
-    print(df)
+    # print(df)
     max = 0
     for year in years:
         df_temp = df[df['year'] == int(year)]
@@ -131,15 +155,26 @@ def post_correct_list(input_text, model, tokenizer):
     for sentence in progress_bar(input_text):
         return_list.append(post_correct(sentence, model, tokenizer))
     return return_list
-def print_statistics(df_name):
-    df = read_pandas(f'{BASE_PATH}/dataframes/{df_name}')
-    # plot1(df)
-    # plot2(df)
-    source = list(df['source'])[:100]
-    post_corrected_source = post_correct_list(source)
-    target = list(df['target'])[:100]
-    print(wer_cer_jaccard(source, target))
-    print(wer_cer_jaccard(post_corrected_source, target))
+
+def equal_distribution_dataframe(df):
+    least_common = collections.Counter(list(df['year'])).most_common()[-1]
+    print(least_common[1])
+    return df.groupby("year").sample(n=least_common[1], random_state=1)
+    # nrows = len(df)
+    # total_sample_size = 1e4
+    # df.groupby('year').apply(lambda x: x.sample(int((x.count() / nrows) * sample_size)))
+    # return df
+def print_statistics():
+    df_names = ['PRE_OCR_CLEANED_statenvertaling', 'PRE_OCR_CLEANED_IMPACT', 'PRE_OCR_CLEANED_historical', 'PRE_OCR_CLEANED_DBNL', 'PRE_OCR_CLEANED_17th']
+    for df_name in df_names:
+        print(df_name)
+        df = read_pandas(f'{BASE_PATH}/dataframes/{df_name}')
+
+        df = equal_distribution_dataframe(df)
+        print(len(df))
+
+        # plot1(df)
+        # plot2(df)
 
 def perform_performance_comparison():
     df_names = ['POST_OCR_IMPACT']
@@ -147,7 +182,6 @@ def perform_performance_comparison():
     model_variants = ['google-flan-t5-base-post-correction-50000-', 'yhavinga-t5-base-dutch-post-correction-50000-']
     for df_name in df_names:
         df = read_pandas(f'{BASE_PATH}/dataframes/{df_name}').sample(100)
-
         source = list(df['source'])
         for model_name in model_names:
             for model_variant in model_variants:
@@ -161,8 +195,5 @@ def perform_performance_comparison():
                 print(f'Post-corrected: {wer_cer_jaccard(post_corrected_source, target)}')
                 # print(wer_cer_jaccard(post_corrected_source, target))
 
-perform_performance_comparison()
-# print_statistics('PRE_OCR_CLEANED')
-# print_statistics('POST_OCR_IMPACT')
-# print_vocabulary_per_year('PRE_OCR_CLEANED')
-# print_total_count_by_period(df)
+print_statistics()
+# perform_performance_comparison()
