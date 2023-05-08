@@ -8,11 +8,11 @@ import DataCreator
 
 if __name__ == "__main__":
     # delpher = Delpher()
-    # delpher.download_images_period(1630, 1990, maximum_records=20, step_size=10)
-    # imageProcessor = ImageProcessor(SAVE_PATH_DOWNLOAD_IMAGE)
+    # delpher.download_images_period(1610, 1630, maximum_records=1000, step_size=10)
+    imageProcessor = ImageProcessor(SAVE_PATH_DOWNLOAD_IMAGE)
     # imageProcessor.test()
     # imageProcessor.create_rectangles(80, 0, 200)
-    # imageProcessor.clean_rectangles(SAVE_PATH_BACKGROUND_IMAGE)
+    imageProcessor.clean_rectangles(SAVE_PATH_BACKGROUND_IMAGE)
 
     df = DataCreator.get_dataframe()
 

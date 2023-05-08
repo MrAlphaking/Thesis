@@ -59,6 +59,8 @@ def get_data():
     # data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins, dbnl]
     # data_list = [impact_newspapers]
     # data_list = [statenvertaling]
+    # data_list = [dbnl]
+    data_list = [seventeenth_century_newspaper]
     # data_list = [impact_newspapers, impact_books, impact_parliamentary_proceedings, impact_radiobulletins]
     dataframes = []
 
