@@ -20,9 +20,9 @@ SAVE_PATH_IMPACT = BASE_PATH + "dataframes/IMPACT_"
 
 # DataCreator.py
 # MAX_THREADING_COUNT = 50
-SAVE_PATH_POST_OCR = BASE_PATH + "dataframes/POST_OCR_17th"
-SAVE_PATH_PRE_OCR_UNCLEANED = BASE_PATH + "dataframes/PRE_OCR_UNCLEANED_17th"
-SAVE_PATH_PRE_OCR_CLEANED = BASE_PATH + "dataframes/PRE_OCR_CLEANED_17th"
+SAVE_PATH_POST_OCR = BASE_PATH + "dataframes/POST_OCR_statenvertaling"
+SAVE_PATH_PRE_OCR_UNCLEANED = BASE_PATH + "dataframes/PRE_OCR_UNCLEANED_statenvertaling"
+SAVE_PATH_PRE_OCR_CLEANED = BASE_PATH + "dataframes/PRE_OCR_CLEANED_statenvertaling"
 
 # Telegram
 
