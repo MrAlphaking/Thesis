@@ -85,7 +85,7 @@ def create_ocr_dataframe(df):
     df.groupby('year')
     years = list(df["year"].unique())
     years.sort()
-    print(years)
+    # print(years)
     threads = list()
     df_list = list()
 
