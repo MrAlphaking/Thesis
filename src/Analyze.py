@@ -1,3 +1,4 @@
+import os
 from collections import Counter
 from data_loader.DataLoader import *
 from transformers import AutoModelWithLMHead, AutoTokenizer, AutoModelForSeq2SeqLM
@@ -145,6 +146,7 @@ delpher = Delpher()
 
 
 def post_correct(input_text, model, tokenizer):
+    input_text = str(input_text)
     input_text = task_prefix + input_text + "</s>"
     input_ids = tokenizer.encode(input_text, return_tensors="pt")
     outputs = model.generate(input_ids, max_length=256, num_beams=1)
@@ -209,7 +211,6 @@ def perform_performance_comparison():
             for model_variant in model_variants:
                 print(f'{model_variant}{model_name} on dataset: {df_name}')
                 tokenizer = AutoTokenizer.from_pretrained(f"./models/{model_variant}{model_name}")
-                # model = AutoModelWithLMHead.from_pretrained(f"./models/{model_variant}{model_name}")
                 model = AutoModelForSeq2SeqLM.from_pretrained(f"./models/{model_variant}{model_name}")
                 post_corrected_source = post_correct_list(source, model, tokenizer)
                 target = list(df['target'])
@@ -217,5 +218,39 @@ def perform_performance_comparison():
                 print(f'Post-corrected: {wer_cer_jaccard(post_corrected_source, target)}')
                 # print(wer_cer_jaccard(post_corrected_source, target))
 
-print_statistics()
+def perform_performance_comparison_ICDAR():
+    directory = '../../data/Ground Truth/ICDAR'
+    files = os.listdir(directory)
+    icdar_ocr_string = "[OCR_toInput] "
+    icdar_ground_truth_string = "[ GS_aligned] "
+
+    icdar_ground_truth = []
+    icdar_ocr_pre = []
+    for file in files:
+        file = f'{directory}/{file}'
+        f = open(file, "r", encoding='utf8')
+        for line in f:
+            line = line.replace('\n', '').replace('@','')
+            if icdar_ocr_string in line:
+                icdar_ocr_pre.append(line.replace(icdar_ocr_string,''))
+            if icdar_ground_truth_string in line:
+                icdar_ground_truth.append(line.replace(icdar_ground_truth_string,''))
+
+
+    directory = './models'
+    model_names = os.listdir(directory)
+    print(files)
+
+    for model_name in model_names:
+        print(f'{model_name} on dataset: ICDAR')
+        tokenizer = AutoTokenizer.from_pretrained(f"{directory}/{model_name}")
+        model = AutoModelForSeq2SeqLM.from_pretrained(f"{directory}/{model_name}")
+        icdar_ocr_post = []
+
+        for line in progress_bar(icdar_ocr_pre[:1]):
+            icdar_ocr_post.append(" ".join(post_correct_list(line.split('.')), model, tokenizer))
+        print(f'Normal: {wer_cer_jaccard(icdar_ocr_pre, icdar_ground_truth)}')
+        print(f'Post-corrected: {wer_cer_jaccard(icdar_ocr_post, icdar_ground_truth)}')
+# print_statistics()
 # perform_performance_comparison()
+perform_performance_comparison_ICDAR()

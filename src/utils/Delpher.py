@@ -59,7 +59,7 @@ class Delpher:
         # print(result_dict)
         for key in result_dict:
             item = result_dict[key]
-
+            print(item)
             try:
                 urllib.request.urlretrieve(item['image'], f'{path}{item["page_url"].replace(":","-")}.jp2')
             except:
