@@ -67,7 +67,7 @@ def wer_cer_jaccard(pred_list, truth_list):
     avg_wer = sum(wer_scores) / len(wer_scores)
     avg_cer = sum(cer_scores) / len(cer_scores)
     avg_jaccard = sum(jaccard_scores) / len(jaccard_scores)
-    return avg_wer, avg_cer, avg_jaccard, len(pred_words_set), len(truth_words_set)
+    return avg_wer, avg_cer, avg_jaccard
 
 # def plot1(df):
 #     """
@@ -154,7 +154,7 @@ def post_correct(input_text, model, tokenizer):
 
 def post_correct_list(input_text, model, tokenizer):
     return_list = []
-    for sentence in progress_bar(input_text):
+    for sentence in input_text:
         return_list.append(post_correct(sentence, model, tokenizer))
     return return_list
 
@@ -199,24 +199,55 @@ def print_statistics():
 
         # plot1(df)
         # plot2(df)
+import sys
+def perform_performance_comparison(model_variant):
+    print_telegram("Starting creating evaluation tables")
+    directory1 = f'./models/{model_variant}/'
+    model_names = os.listdir(directory1)
+    print(model_names)
+    directory2 = '../../data/Ground Truth/dataframes/post'
+    df_names = os.listdir(directory2)
+    print_bool = True
+    for model_name in model_names:
+        output_string_post = f'& {model_name} '
+        output_string_normal = f'& Baseline'
 
-def perform_performance_comparison():
-    df_names = ['POST_OCR_IMPACT']
-    model_names = ['IMPACT']
-    model_variants = ['google-flan-t5-base-post-correction-50000-', 'yhavinga-t5-base-dutch-post-correction-50000-']
-    for df_name in df_names:
-        df = read_pandas(f'{BASE_PATH}/dataframes/{df_name}').sample(100)
-        source = list(df['source'])
-        for model_name in model_names:
-            for model_variant in model_variants:
-                print(f'{model_variant}{model_name} on dataset: {df_name}')
-                tokenizer = AutoTokenizer.from_pretrained(f"./models/{model_variant}{model_name}")
-                model = AutoModelForSeq2SeqLM.from_pretrained(f"./models/{model_variant}{model_name}")
-                post_corrected_source = post_correct_list(source, model, tokenizer)
-                target = list(df['target'])
-                print(f'Normal: {wer_cer_jaccard(source, target)}')
-                print(f'Post-corrected: {wer_cer_jaccard(post_corrected_source, target)}')
-                # print(wer_cer_jaccard(post_corrected_source, target))
+        tokenizer = AutoTokenizer.from_pretrained(f"./models/{model_variant}/{model_name}")
+        model = AutoModelForSeq2SeqLM.from_pretrained(f"./models/{model_variant}/{model_name}")
+        for df_name in df_names:
+            df = read_pandas(f'{directory2}/{df_name}')
+
+            # write_pandas(df, f'../../data/Ground Truth/dataframes/post/{df_name}-250')
+
+            source = list(df['source'])
+            # print(f'{model_variant}/{model_name} on dataset: {df_name}')
+
+            post_corrected_source = post_correct_list(source, model, tokenizer)
+            target = list(df['target'])
+            # print(f'Normal: {wer_cer_jaccard(source, target)}')
+            avg_wer, avg_cer, avg_jaccard = wer_cer_jaccard(post_corrected_source, target)
+            output_string_post += f' & WER: {round(avg_wer, 3)} \\newline CER: {round(avg_cer, 3)} \\newline Jaccard: {round(avg_jaccard, 3)}'
+
+            avg_wer, avg_cer, avg_jaccard = wer_cer_jaccard(source, target)
+            output_string_normal += f' & WER: {round(avg_wer, 3)} \\newline CER: {round(avg_cer, 3)} \\newline Jaccard: {round(avg_jaccard, 3)}'
+
+            # print(f'Post-corrected: {wer_cer_jaccard(post_corrected_source, target)}')
+            # print(wer_cer_jaccard(post_corrected_source, target))
+
+        output_string_post += '\\\\ \cline{2 - 7}'
+        output_string_normal += '\\\\ \cline{2 - 7}'
+        if print_bool:
+            with open(f'output-{model_variant}.txt', 'a') as f:
+                f.write(f'{output_string_normal}\n')
+            print_telegram(output_string_normal)
+            print_bool = False
+
+        with open(f'output-{model_variant}.txt', 'a') as f:
+            f.write(f'{output_string_post}\n')
+        print_telegram(output_string_post)
+    print_telegram(f"Finished evaluation for {model_variant}")
+
+
 
 def perform_performance_comparison_ICDAR():
     directory = '../../data/Ground Truth/ICDAR'
@@ -252,5 +283,6 @@ def perform_performance_comparison_ICDAR():
         print(f'Normal: {wer_cer_jaccard(icdar_ocr_pre, icdar_ground_truth)}')
         print(f'Post-corrected: {wer_cer_jaccard(icdar_ocr_post, icdar_ground_truth)}')
 # print_statistics()
-# perform_performance_comparison()
-perform_performance_comparison_ICDAR()
+perform_performance_comparison('google')
+perform_performance_comparison('yhavinga')
+# perform_performance_comparison_ICDAR()

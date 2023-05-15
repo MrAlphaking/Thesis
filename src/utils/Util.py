@@ -27,17 +27,17 @@ def write_pandas(df, path):
     df.to_csv(path, index=False)
 
 def read_pandas(path):
-    print_telegram(f'Reading from file: {path}')
+    print(f'Reading from file: {path}')
     return pd.read_csv(path)
 
 def progress_bar(item_list, desc=""):
     return tqdm(item_list, token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID, desc=desc, miniters=int(len(item_list)/100), mininterval=1, maxinterval=float("inf"))
 def print_telegram(text):
-    stack = inspect.stack()
-    if "self" in stack[1][0].f_locals:
-        the_class = stack[1][0].f_locals["self"].__class__.__name__
-        the_method = stack[1][0].f_code.co_name
-        text = f'{the_class}, {the_method}: {text}'
+    # stack = inspect.stack()
+    # if "self" in stack[1][0].f_locals:
+    #     the_class = stack[1][0].f_locals["self"].__class__.__name__
+    #     the_method = stack[1][0].f_code.co_name
+    #     text = f'{the_class}, {the_method}: {text}'
 
     print(text)
 
