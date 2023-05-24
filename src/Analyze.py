@@ -69,28 +69,9 @@ def wer_cer_jaccard(pred_list, truth_list):
     avg_jaccard = sum(jaccard_scores) / len(jaccard_scores)
     return avg_wer, avg_cer, avg_jaccard
 
-# def plot1(df):
-#     """
-#     prints the total amount of sentences per time period
-#     :param df: The df that contains the sentences
-#     """
-#     print("Plot 1 Sentences")
-#     xtick_dict = get_xticklabels()
-#     years = list(df['year'])
-#     years.sort()
-#     # print(count[years[0]])
-#     freq = Counter()
-#     for x in years:
-#         freq[(x - 1) // 10] += 1
-#     # print(freq.values())
-#     # print(freq.keys())
-#
-#     for index, key in enumerate(freq.keys()):
-#         print(f'({xtick_dict[f"{key}0-{key}9"]}, {freq[key]}) %{key}0-{key}9')
-
 def plot1(df):
     """
-    prints the amount of words in the total vocabulary per year
+    prints the amount of sentences in the total vocabulary per year
     :param df: The df that contains the sentences
     """
     print("Plot 1 Sentences")
@@ -184,22 +165,127 @@ def sample_dataframe(df, sample_size):
     sample_df = sample_df.sample(sample_size)
 
     return sample_df
+
+import random
+def count_distinct_words(word_set, string):
+
+    for word in str(string).split(" "):
+        word = word.replace("[^A-Za-z0-9]", "")
+        words = word.split()
+        word_set.update(words)
+    return word_set
+
+def count_distinctive_words_list(sentence_list):
+    word_set = set()
+    for sentence in sentence_list:
+        word_set = count_distinct_words(word_set, sentence)
+
+    return len(word_set)
+
+def set_number_of_words(string_list, num_of_words=1000):
+    word_set_ground_truth = set()
+    word_set_ocr = set()
+    return_list = []
+    for row in string_list:
+        if len(row[0]) > 128:
+            continue
+        word_set_ground_truth = count_distinct_words(word_set_ground_truth, row[0])
+        word_set_ocr = count_distinct_words(word_set_ocr, row[1])
+        return_list.append(row[1])
+        if len(word_set_ground_truth) >= num_of_words:
+            return len(word_set_ground_truth), len(word_set_ocr), return_list
+
+    return len(word_set_ground_truth), len(word_set_ocr), return_list
+
+def print_list(sentence_list, message =""):
+    print(f'{message}')
+    for sentence in sentence_list:
+        print(sentence)
+def print_graph_equal_words_per_year():
+    x_tick_label = get_xticklabels()
+    df = read_pandas(f'{BASE_PATH}/dataframes/TOTAL_USED_DATASET_200000')
+    from sklearn.utils import shuffle
+    df = shuffle(df)
+    tokenizer = AutoTokenizer.from_pretrained("./models/google-flan-t5-base-TOTALAttempt2-post-correction-200000")
+    model = AutoModelForSeq2SeqLM.from_pretrained("./models/google-flan-t5-base-TOTALAttempt2-post-correction-200000")
+
+    string_list_ground_truth = []
+    string_list_ocr = []
+    string_list_post_corrected = []
+
+    for label in progress_bar(x_tick_label):
+        print(label)
+        label_split = label.split('-')
+        mask = (df['year'] > int(label_split[0])) & (df['year'] <= int(label_split[1]))
+        df_temp = df.loc[mask]
+
+        ground_truth = list(df_temp['target'])
+        pre_correction = list(df_temp['source'])
+
+        word_set_ground_truth_length, word_set_ocr_length, sentence_list = set_number_of_words(zip(ground_truth, pre_correction), num_of_words=2000)
+
+        word_set_post_corrected_length = count_distinctive_words_list(post_correct_list(sentence_list, model, tokenizer))
+        # print(x_tick_label)
+        # print(label)
+        # print(x_tick_label[label])
+        # print(word_set_ground_truth_length)
+        # print(label)
+        string_list_ground_truth.append(f'({x_tick_label[label]}, {word_set_ground_truth_length}) %{label}')
+        string_list_ocr.append(f'({x_tick_label[label]}, {word_set_ocr_length}) %{label}')
+        string_list_post_corrected.append(f'({x_tick_label[label]}, {word_set_post_corrected_length}) %{label}')
+
+        print_list(string_list_ground_truth, message='ground truth')
+        print_list(string_list_ocr, message='ocr')
+        print_list(string_list_post_corrected, message='post_corrected')
+
+        # post_correction = list(df['source'])
+
 def equal_distribution_dataframe(df):
     least_common = collections.Counter(list(df['year'])).most_common()[-1]
     print(least_common[1])
     return df.groupby("year").sample(n=least_common[1], random_state=1)
 def print_statistics():
-    df_names = ['PRE_OCR_CLEANED_statenvertaling', 'PRE_OCR_CLEANED_IMPACT', 'PRE_OCR_CLEANED_historical', 'PRE_OCR_CLEANED_DBNL', 'PRE_OCR_CLEANED_17th']
+    # df_names = ['PRE_OCR_CLEANED_statenvertaling', 'PRE_OCR_CLEANED_IMPACT', 'PRE_OCR_CLEANED_historical', 'PRE_OCR_CLEANED_DBNL', 'PRE_OCR_CLEANED_17th']
+    df_names = ['PRE_OCR_CLEANED']
     for df_name in df_names:
         print(df_name)
         df = read_pandas(f'{BASE_PATH}/dataframes/{df_name}')
 
-        df = equal_distribution_dataframe(df)
+        # df = equal_distribution_dataframe(df)
         print(len(df))
 
-        # plot1(df)
-        # plot2(df)
+        plot1(df)
+        plot2(df)
 import sys
+
+def perform_performance_comparison_total():
+    directory1 = f'./models/total/'
+    model_names = os.listdir(directory1)
+
+    df = read_pandas('../../data/Ground Truth/dataframes/TOTAL_TEST_DATASET_500')
+
+    for model_name in model_names:
+        # output_string_post = f'& {model_name} '
+        # output_string_normal = f'& Baseline'
+        print(model_name)
+
+        tokenizer = AutoTokenizer.from_pretrained(f"./models/total/{model_name}")
+        model = AutoModelForSeq2SeqLM.from_pretrained(f"./models/total/{model_name}")
+
+        source = list(df['source'])
+        # print(f'{model_variant}/{model_name} on dataset: {df_name}')
+
+        post_corrected_source = post_correct_list(source, model, tokenizer)
+        target = list(df['target'])
+        # print(f'Normal: {wer_cer_jaccard(source, target)}')
+        avg_wer, avg_cer, avg_jaccard = wer_cer_jaccard(post_corrected_source, target)
+        print('Post-corrected')
+        print(f'WER: {round(avg_wer, 3)} \\newline CER: {round(avg_cer, 3)} \\newline Jaccard: {round(avg_jaccard, 3)}')
+        
+        print('Baseline')
+        avg_wer, avg_cer, avg_jaccard = wer_cer_jaccard(source, target)
+        print(f'WER: {round(avg_wer, 3)} \\newline CER: {round(avg_cer, 3)} \\newline Jaccard: {round(avg_jaccard, 3)}')
+
 def perform_performance_comparison(model_variant):
     print_telegram("Starting creating evaluation tables")
     directory1 = f'./models/{model_variant}/'
@@ -283,6 +369,8 @@ def perform_performance_comparison_ICDAR():
         print(f'Normal: {wer_cer_jaccard(icdar_ocr_pre, icdar_ground_truth)}')
         print(f'Post-corrected: {wer_cer_jaccard(icdar_ocr_post, icdar_ground_truth)}')
 # print_statistics()
-perform_performance_comparison('google')
-perform_performance_comparison('yhavinga')
+# print_graph_equal_words_per_year()
+# perform_performance_comparison('google')
+perform_performance_comparison_total()
+# perform_performance_comparison('yhavinga')
 # perform_performance_comparison_ICDAR()

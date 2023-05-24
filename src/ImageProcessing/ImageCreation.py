@@ -218,7 +218,7 @@ class ImageCreation:
         for spacing in y_spacing_list:
             y = spacing + 0.5 * text_spacing + 0.5 * y_spacing + font_offset
             text_spacings.append(y)
-            I1.line([(0,y), (img.size[0], y)])
+            # I1.line([(0,y), (img.size[0], y)])
 
 
         # img = self.apply_blur(img, year)

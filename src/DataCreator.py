@@ -135,7 +135,6 @@ def sample_dataframe(df, sample_size):
         total_size = len(pd.concat(samples))
         sample_size_per_year += 1
 
-    print("finished")
     # Combine the samples from each group into a single DataFrame
     sample_df = pd.concat(samples)
 
@@ -161,7 +160,7 @@ def get_dataframe():
         write_pandas(df, SAVE_PATH_POST_OCR)
     return df
 
-# if __name__ == "__main__":
-#     df = get_data()
-#     df_list = []
-#     create_ocr_dataframe(df)
+if __name__ == "__main__":
+    df = get_data().sample(10000)
+    df_list = []
+    create_ocr_dataframe(df)
